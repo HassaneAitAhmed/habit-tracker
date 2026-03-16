@@ -1,0 +1,33 @@
+<div class="quote-banner">
+  <div class="quote-text" id="quoteText"></div>
+  <button class="quote-refresh" onclick="nextQuote()" title="Next quote">↻</button>
+</div>
+
+<div class="header">
+  <div>
+    <div class="header-title">DISCIPLINE<span style="color:var(--accent)">.</span></div>
+    <div class="header-sub">Cold. Focused. Consistent.</div>
+  </div>
+  <div class="header-right">
+    <div class="month-nav">
+      <button id="prevMonth">&#8249;</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button id="nextMonth">&#8250;</button>
+    </div>
+    <button class="icon-btn" onclick="exportCSV()" title="Export CSV">↓</button>
+    <button class="icon-btn" id="darkToggleBtn" onclick="toggleDark()" title="Toggle theme">◑</button>
+    <div class="user-pill" onclick="signOut()">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-email" id="userEmail">user</div>
+      <span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3);margin-left:3px">EXIT</span>
+    </div>
+  </div>
+</div>
+
+<div class="sync-bar"><div class="sync-bar-fill" id="syncBarFill"></div></div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
+  <div class="tab" onclick="showTab('journal')">Journal</div>
+  <div class="tab" onclick="showTab('settings')">Settings</div>
+</div>

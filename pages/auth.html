@@ -1,0 +1,40 @@
+<div class="auth-card">
+  <div class="auth-logo">DISCIPLINE<span>.</span></div>
+  <div class="auth-sub">Wake up. Show up. Win.</div>
+  <div class="auth-tabs">
+    <div class="auth-tab active" onclick="switchAuthTab('login')">Sign In</div>
+    <div class="auth-tab" onclick="switchAuthTab('signup')">Join</div>
+  </div>
+  <div id="loginForm">
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="auth-submit" onclick="signIn()">Enter</button>
+    <div class="auth-divider">// new here?</div>
+    <div style="text-align:center;font-size:12px;color:var(--ink3);font-family:var(--font-mono)">
+      <span style="color:var(--accent);cursor:pointer;letter-spacing:.06em" onclick="switchAuthTab('signup')">Create account →</span>
+    </div>
+  </div>
+  <div id="signupForm" style="display:none;">
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password">
+    </div>
+    <div class="auth-field">
+      <label>Confirm Password</label>
+      <input type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password">
+    </div>
+    <button class="auth-submit" onclick="signUp()">Start the grind</button>
+  </div>
+  <div class="auth-error" id="authError"></div>
+  <div class="auth-msg" id="authMsg"></div>
+</div>

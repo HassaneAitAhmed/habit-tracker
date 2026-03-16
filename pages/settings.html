@@ -1,0 +1,68 @@
+<div class="settings-page">
+  <div class="section-label">Settings &amp; Customization</div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Appearance</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Dark Mode</div>
+        <div class="setting-sub">Switch to a darker theme</div>
+      </div>
+      <div class="toggle" id="darkToggle" onclick="toggleDark()"></div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Reminders</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Daily Reminder</div>
+        <div class="setting-sub">Browser notification to check in</div>
+      </div>
+      <div class="toggle" id="reminderToggle" onclick="toggleReminder()"></div>
+    </div>
+    <div class="setting-row" id="reminderTimeRow" style="display:none;">
+      <div class="setting-label">Reminder Time</div>
+      <input type="time" id="reminderTime" value="20:00"
+        style="width:110px;padding:5px 9px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--ink);"
+        onchange="saveReminderSettings()">
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Categories</div>
+    <div class="cat-manager" id="catManager"></div>
+    <button class="add-cat-btn" onclick="addCategory()">+ Add Category</button>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Manage Habits</div>
+    <div id="habitSettingsList"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Account</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label" id="settingsEmail">—</div>
+        <div class="setting-sub">Signed in account</div>
+      </div>
+      <button class="export-btn" onclick="signOut()">Sign Out</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Export CSV</div>
+        <div class="setting-sub">Download all habit data</div>
+      </div>
+      <button class="export-btn" onclick="exportCSV()">Export</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Delete All Data</div>
+        <div class="setting-sub">Permanently delete habits &amp; logs</div>
+      </div>
+      <button class="export-btn" style="color:var(--danger);border-color:var(--danger);"
+        onclick="deleteAllData()">Delete</button>
+    </div>
+  </div>
+</div>

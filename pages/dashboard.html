@@ -1,0 +1,119 @@
+<div class="main">
+  <div>
+    <div class="section-label">Overview</div>
+    <div class="stats-row">
+      <div class="stat-card accent-card">
+        <div class="stat-label">Total Goal</div>
+        <div class="stat-value" id="statGoal">0</div>
+        <div class="stat-sub">checks this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="statDone">0</div>
+        <div class="stat-sub">habits checked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value" id="statLeft">0</div>
+        <div class="stat-sub">to go</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today's Rate</div>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 62 62">
+            <circle cx="31" cy="31" r="23" fill="none" stroke="var(--border)" stroke-width="7"/>
+            <circle cx="31" cy="31" r="23" fill="none" stroke="var(--accent)" stroke-width="7"
+              stroke-dasharray="144.51" stroke-dashoffset="144.51"
+              id="donutCircle" stroke-linecap="round" transform="rotate(-90 31 31)"/>
+          </svg>
+          <div class="donut-pct" id="donutPct">0%</div>
+        </div>
+        <div class="stat-sub" style="text-align:center" id="statTodayRate"></div>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">Daily Progress</div>
+        <div class="bar-chart" id="dailyChart"></div>
+        <div id="dailyLabels" style="display:flex;gap:2px;margin-top:3px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Weekly Progress</div>
+        <div class="bar-chart" id="weeklyChart"></div>
+        <div style="display:flex;justify-content:space-around;margin-top:3px;" id="weekLabels"></div>
+      </div>
+    </div>
+
+    <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>My Habits</span>
+      <select id="catFilter"
+        style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--ink);font-size:11px;font-family:var(--font-mono);"
+        onchange="renderTable()">
+        <option value="">All Categories</option>
+      </select>
+    </div>
+    <div class="habits-card">
+      <div class="habits-header">
+        <div class="habits-title">Daily Check-In</div>
+        <button class="add-btn" onclick="openModal()">+ Add Habit</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="habits-table">
+          <thead id="habitsHead"></thead>
+          <tbody id="habitsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-label">Mental State</div>
+    <div class="mood-card" id="moodRows"></div>
+  </div>
+
+  <div class="sidebar">
+    <div class="side-card">
+      <div class="side-card-title">Overall Progress</div>
+      <div style="text-align:center;margin-bottom:9px;">
+        <div class="streak-days" id="overallPct">0%</div>
+        <div style="font-size:10px;color:var(--ink3)">completion rate</div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3)">GOAL</div>
+          <div style="font-family:var(--font-head);font-size:16px" id="sGoal">0</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3)">DONE</div>
+          <div style="font-family:var(--font-head);font-size:16px" id="sDone">0</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3)">LEFT</div>
+          <div style="font-family:var(--font-head);font-size:16px" id="sLeft">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-title">Current Streak</div>
+      <div style="margin-bottom:7px;">
+        <span class="streak-days" id="streakNum">0</span>
+        <span style="font-size:10px;color:var(--ink3)"> days</span>
+      </div>
+      <div class="streak-grid" id="streakGrid"></div>
+      <div style="margin-top:7px;font-size:10px;color:var(--ink3)">
+        Last 21 days ·
+        <span style="color:var(--accent);font-weight:500" id="streakMsg">Start today!</span>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-title">Analysis</div>
+      <div id="analysisList"></div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-title">Top 10 Habits</div>
+      <div id="topHabits"></div>
+    </div>
+  </div>
+</div>

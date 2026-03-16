@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Habit Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+</head>
+<body>
+
+  <div class="config-banner" id="configBanner">
+    <strong>⚙ Setup Required</strong> — Open <code>js/supabase.js</code> and replace <code>YOUR_SUPABASE_URL</code> and <code>YOUR_SUPABASE_ANON_KEY</code>.
+  </div>
+
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading your habits…</div>
+  </div>
+
+  <div id="authScreen" style="display:none;">
+    <div class="auth-card">
+  <div class="auth-logo">DISCIPLINE<span>.</span></div>
+  <div class="auth-sub">Wake up. Show up. Win.</div>
+  <div class="auth-tabs">
+    <div class="auth-tab active" onclick="switchAuthTab('login')">Sign In</div>
+    <div class="auth-tab" onclick="switchAuthTab('signup')">Join</div>
+  </div>
+  <div id="loginForm">
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="auth-submit" onclick="signIn()">Enter</button>
+    <div class="auth-divider">// new here?</div>
+    <div style="text-align:center;font-size:12px;color:var(--ink3);font-family:var(--font-mono)">
+      <span style="color:var(--accent);cursor:pointer;letter-spacing:.06em" onclick="switchAuthTab('signup')">Create account →</span>
+    </div>
+  </div>
+  <div id="signupForm" style="display:none;">
+    <div class="auth-field">
+      <label>Email</label>
+      <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="signupPassword" placeholder="Min. 6 characters" autocomplete="new-password">
+    </div>
+    <div class="auth-field">
+      <label>Confirm Password</label>
+      <input type="password" id="signupConfirm" placeholder="Repeat password" autocomplete="new-password">
+    </div>
+    <button class="auth-submit" onclick="signUp()">Start the grind</button>
+  </div>
+  <div class="auth-error" id="authError"></div>
+  <div class="auth-msg" id="authMsg"></div>
+</div>
+  </div>
+
+  <div id="appScreen" style="display:none;">
+
+<div class="quote-banner">
+  <div class="quote-text" id="quoteText"></div>
+  <button class="quote-refresh" onclick="nextQuote()" title="Next quote">↻</button>
+</div>
+
+<div class="header">
+  <div>
+    <div class="header-title">DISCIPLINE<span style="color:var(--accent)">.</span></div>
+    <div class="header-sub">Cold. Focused. Consistent.</div>
+  </div>
+  <div class="header-right">
+    <div class="month-nav">
+      <button id="prevMonth">&#8249;</button>
+      <div class="month-label" id="monthLabel"></div>
+      <button id="nextMonth">&#8250;</button>
+    </div>
+    <button class="icon-btn" onclick="openShareCard()" title="Share Month Card">✦</button>
+    <button class="icon-btn" onclick="openAccountability()" title="Accountability Partner">👁</button>
+    <button class="icon-btn" onclick="exportCSV()" title="Export CSV">↓</button>
+    <button class="icon-btn" id="themeBtn" onclick="cycleTheme()" title="Cycle theme: Light → Dark → Pink">🌙</button>
+    <div class="user-pill" onclick="signOut()">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-email" id="userEmail">user</div>
+      <span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3);margin-left:3px">EXIT</span>
+    </div>
+  </div>
+</div>
+
+<div class="sync-bar"><div class="sync-bar-fill" id="syncBarFill"></div></div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('dashboard')">Dashboard</div>
+  <div class="tab" onclick="showTab('journal')">Journal</div>
+  <div class="tab" onclick="showTab('settings')">Settings</div>
+  <div class="tab" onclick="showTab('heatmap')">Year View</div>
+  <div class="tab" onclick="showTab('about')">About</div>
+</div>
+
+    <div class="page active" id="page-dashboard">
+      <div class="main">
+  <div>
+    <div class="section-label">Overview</div>
+    <div class="stats-row">
+      <div class="stat-card accent-card">
+        <div class="stat-label">Total Goal</div>
+        <div class="stat-value" id="statGoal">0</div>
+        <div class="stat-sub">checks this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div class="stat-value" id="statDone">0</div>
+        <div class="stat-sub">habits checked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Remaining</div>
+        <div class="stat-value" id="statLeft">0</div>
+        <div class="stat-sub">to go</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Today's Rate</div>
+        <div class="donut-wrap">
+          <svg viewBox="0 0 62 62">
+            <circle cx="31" cy="31" r="23" fill="none" stroke="var(--border)" stroke-width="7"/>
+            <circle cx="31" cy="31" r="23" fill="none" stroke="var(--accent)" stroke-width="7"
+              stroke-dasharray="144.51" stroke-dashoffset="144.51"
+              id="donutCircle" stroke-linecap="round" transform="rotate(-90 31 31)"/>
+          </svg>
+          <div class="donut-pct" id="donutPct">0%</div>
+        </div>
+        <div class="stat-sub" style="text-align:center" id="statTodayRate"></div>
+      </div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <div class="chart-title">Daily Progress</div>
+        <div class="bar-chart" id="dailyChart"></div>
+        <div id="dailyLabels" style="display:flex;gap:2px;margin-top:3px;"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Weekly Progress</div>
+        <div class="bar-chart" id="weeklyChart"></div>
+        <div style="display:flex;justify-content:space-around;margin-top:3px;" id="weekLabels"></div>
+      </div>
+    </div>
+
+    <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>My Habits</span>
+      <select id="catFilter"
+        style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--ink);font-size:11px;font-family:var(--font-mono);"
+        onchange="renderTable()">
+        <option value="">All Categories</option>
+      </select>
+    </div>
+    <div class="habits-card">
+      <div class="habits-header">
+        <div class="habits-title">Daily Check-In</div>
+        <button class="add-btn" onclick="openModal()">+ Add Habit</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="habits-table">
+          <thead id="habitsHead"></thead>
+          <tbody id="habitsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-label">Mental State</div>
+    <div class="mood-card" id="moodRows"></div>
+  </div>
+
+  <div class="sidebar">
+    <div class="side-card">
+      <div class="side-card-title">Overall Progress</div>
+      <div style="text-align:center;margin-bottom:9px;">
+        <div class="streak-days" id="overallPct">0%</div>
+        <div style="font-size:10px;color:var(--ink3)">completion rate</div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3)">GOAL</div>
+          <div style="font-family:var(--font-head);font-size:16px" id="sGoal">0</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3)">DONE</div>
+          <div style="font-family:var(--font-head);font-size:16px" id="sDone">0</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3)">LEFT</div>
+          <div style="font-family:var(--font-head);font-size:16px" id="sLeft">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-title">Current Streak</div>
+      <div style="margin-bottom:7px;">
+        <span class="streak-days" id="streakNum">0</span>
+        <span style="font-size:10px;color:var(--ink3)"> days</span>
+      </div>
+      <div class="streak-grid" id="streakGrid"></div>
+      <div style="margin-top:7px;font-size:10px;color:var(--ink3)">
+        Last 21 days ·
+        <span style="color:var(--accent);font-weight:500" id="streakMsg">Start today!</span>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-title">Analysis</div>
+      <div id="analysisList"></div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-card-title">Top 10 Habits</div>
+      <div id="topHabits"></div>
+    </div>
+    <div class="side-card">
+      <div class="side-card-title">Achievements</div>
+      <div class="badge-grid" id="achievementsList"></div>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <div class="page" id="page-journal">
+      <div class="journal-page">
+  <div class="section-label">Daily Journal</div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+    <button onclick="jPrev()"
+      style="background:var(--card);border:1px solid var(--border);color:var(--ink);width:27px;height:27px;border-radius:6px;cursor:pointer;font-size:14px;">&#8249;</button>
+    <span id="jMonthLabel"
+      style="font-family:var(--font-head);font-size:15px;min-width:130px;text-align:center;color:var(--ink);"></span>
+    <button onclick="jNext()"
+      style="background:var(--card);border:1px solid var(--border);color:var(--ink);width:27px;height:27px;border-radius:6px;cursor:pointer;font-size:14px;">&#8250;</button>
+  </div>
+
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="journalDayPicker"></div>
+
+  <div class="journal-editor">
+    <div class="journal-editor-header">
+      <div class="journal-date-label" id="journalDateLabel">Select a day</div>
+      <button class="save-note-btn" onclick="saveJournalNote()">Save</button>
+    </div>
+    <textarea class="journal-textarea" id="journalTextarea"
+      placeholder="Write your thoughts, reflections, wins…"></textarea>
+  </div>
+
+  <div style="margin-top:18px;">
+    <div class="section-label">Recent Entries</div>
+    <div id="journalEntryList"></div>
+  </div>
+</div>
+    </div>
+
+    <div class="page" id="page-settings">
+      <div class="settings-page">
+  <div class="section-label">Settings &amp; Customization</div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Appearance</div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">Theme</div>
+            <div class="setting-sub">Choose your preferred look</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button id="themeOpt_light" class="theme-opt-btn" onclick="setTheme('light')" title="Light mode">☀️ Light</button>
+            <button id="themeOpt_dark"  class="theme-opt-btn" onclick="setTheme('dark')"  title="Dark mode">🌙 Dark</button>
+            <button id="themeOpt_pink"  class="theme-opt-btn" onclick="setTheme('pink')"  title="Pink mode">🌸 Pink</button>
+          </div>
+        </div>
+      </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Reminders</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Daily Reminder</div>
+        <div class="setting-sub">Browser notification to check in</div>
+      </div>
+      <div class="toggle" id="reminderToggle" onclick="toggleReminder()"></div>
+    </div>
+    <div class="setting-row" id="reminderTimeRow" style="display:none;">
+      <div class="setting-label">Reminder Time</div>
+      <input type="time" id="reminderTime" value="20:00"
+        style="width:110px;padding:5px 9px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--ink);"
+        onchange="saveReminderSettings()">
+    </div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <div class="settings-section">
+    <div class="settings-section-title">Categories</div>
+    <div class="cat-manager" id="catManager"></div>
+    <button class="add-cat-btn" onclick="addCategory()">+ Add Category</button>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Manage Habits</div>
+    <div id="habitSettingsList"></div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-title">Account</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label" id="settingsEmail">—</div>
+        <div class="setting-sub">Signed in account</div>
+      </div>
+      <button class="export-btn" onclick="signOut()">Sign Out</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Export CSV</div>
+        <div class="setting-sub">Download all habit data</div>
+      </div>
+      <button class="export-btn" onclick="exportCSV()">Export</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Delete All Data</div>
+        <div class="setting-sub">Permanently delete habits &amp; logs</div>
+      </div>
+      <button class="export-btn" style="color:var(--danger);border-color:var(--danger);"
+        onclick="deleteAllData()">Delete</button>
+    </div>
+  </div>
+</div>
+    </div>
+
+
+    <div class="page" id="page-heatmap">
+      <div class="heatmap-page">
+        <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Yearly Habit Heatmap</span>
+          <button onclick="openShareCard()" style="background:var(--accent);border:none;color:#F5F2EC;font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:.08em;padding:6px 16px;border-radius:7px;cursor:pointer;">Share Month Card ✦</button>
+        </div>
+        <div class="heatmap-wrap">
+          <div style="display:flex;gap:4px;">
+            <div class="hm-dow">
+              <span></span><span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3)">M</span><span></span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3)">W</span><span></span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3)">F</span><span></span>
+            </div>
+            <div>
+              <div class="heatmap-months" id="heatmapMonths"></div>
+              <div id="heatmapGrid"></div>
+            </div>
+          </div>
+          <div class="heatmap-legend">
+            <span>Less</span>
+            <div class="hm-legend-cell" style="background:var(--surface)"></div>
+            <div class="hm-legend-cell hm-cell level-1"></div>
+            <div class="hm-legend-cell hm-cell level-2"></div>
+            <div class="hm-legend-cell hm-cell level-3"></div>
+            <div class="hm-legend-cell hm-cell level-4"></div>
+            <span>More</span>
+          </div>
+          <div id="heatmapSummary"></div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-card">
+            <div class="chart-title">Best Day of the Week</div>
+            <div class="bd-chart" id="bestDayChart"></div>
+            <div id="bestDayMsg"></div>
+          </div>
+          <div class="side-card" style="border-radius:var(--radius);border:1px solid var(--border);">
+            <div class="side-card-title">Achievements</div>
+            <div class="badge-grid" id="achievementsList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page" id="page-about">
+      <div class="about-page">
+
+  <div class="about-hero">
+    <div class="about-avatar">HA</div>
+    <div>
+      <div class="about-name">Hassane Ait Ahmed Lamara</div>
+      <div class="about-role">Computer Science Student · Full-Stack Developer · AI &amp; ML Enthusiast</div>
+      <div class="about-tagline">I build AI-powered systems, web applications, and mobile apps that solve real-world problems.</div>
+      <div class="about-links">
+        <a class="about-link primary" href="https://github.com/HassaneAitAhmed" target="_blank">⟶ View Projects</a>
+        <a class="about-link secondary" href="mailto:hassaneaitahmedlamara@gmail.com">✉ Contact</a>
+        <a class="about-link secondary" href="https://www.linkedin.com/in/hassane-ait-ahmed-lamara/" target="_blank">in LinkedIn</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="about-card-title">Who I Am</div>
+      <div class="about-card-sub">Passion &amp; Background</div>
+      <div class="about-card-body">
+        I am a Computer Science student passionate about Artificial Intelligence and modern software development.
+        I enjoy transforming complex problems into elegant digital solutions and constantly exploring new technologies to expand my skills.
+      </div>
+    </div>
+    <div class="about-card">
+      <div class="about-card-title">What I Build</div>
+      <div class="about-card-sub">Full-Stack &amp; AI Skills</div>
+      <div class="about-card-body">
+        My work focuses on full-stack applications and AI-powered systems. I design scalable back-end architectures,
+        build web and mobile apps, and create machine learning solutions that deliver real value.
+      </div>
+    </div>
+    <div class="about-card" style="grid-column:1/-1;">
+      <div class="about-card-title">Career Objective</div>
+      <div class="about-card-sub">Looking For</div>
+      <div class="about-card-body">
+        I am currently seeking internship and collaboration opportunities where I can contribute, learn, and grow as an AI and software engineer
+        while working on impactful and innovative projects. Open to remote and on-site opportunities worldwide.
+      </div>
+    </div>
+  </div>
+
+  <div class="about-stack-section">
+    <div class="about-stack-title">Tech Stack</div>
+    <div class="about-stack-sub">Technologies I Work With</div>
+    <div class="about-stack-groups">
+
+      <div class="about-stack-group">
+        <div class="about-stack-label">AI &amp; Data Science</div>
+        <div class="about-tags">
+          <span class="about-tag ai">Python</span>
+          <span class="about-tag ai">TensorFlow</span>
+          <span class="about-tag ai">PyTorch</span>
+          <span class="about-tag ai">Scikit-learn</span>
+          <span class="about-tag ai">Pandas</span>
+          <span class="about-tag ai">NumPy</span>
+        </div>
+      </div>
+
+      <div class="about-stack-group">
+        <div class="about-stack-label">Frontend Development</div>
+        <div class="about-tags">
+          <span class="about-tag fe">React</span>
+          <span class="about-tag fe">Next.js</span>
+          <span class="about-tag fe">Tailwind CSS</span>
+          <span class="about-tag fe">JavaScript</span>
+          <span class="about-tag fe">TypeScript</span>
+        </div>
+      </div>
+
+      <div class="about-stack-group">
+        <div class="about-stack-label">Backend Development</div>
+        <div class="about-tags">
+          <span class="about-tag be">Node.js</span>
+          <span class="about-tag be">Express.js</span>
+          <span class="about-tag be">PostgreSQL</span>
+          <span class="about-tag be">MongoDB</span>
+          <span class="about-tag be">REST APIs</span>
+          <span class="about-tag be">Supabase</span>
+        </div>
+      </div>
+
+      <div class="about-stack-group">
+        <div class="about-stack-label">Mobile Development</div>
+        <div class="about-tags">
+          <span class="about-tag mob">Flutter</span>
+          <span class="about-tag mob">React Native</span>
+        </div>
+      </div>
+
+      <div class="about-stack-group">
+        <div class="about-stack-label">Tools &amp; DevOps</div>
+        <div class="about-tags">
+          <span class="about-tag tools">Git</span>
+          <span class="about-tag tools">GitHub</span>
+          <span class="about-tag tools">Docker</span>
+          <span class="about-tag tools">Linux</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="about-footer">
+    Built by Hassane Ait Ahmed Lamara · <a href="https://github.com/HassaneAitAhmed" target="_blank">GitHub</a> · <a href="https://www.linkedin.com/in/hassane-ait-ahmed-lamara/" target="_blank">LinkedIn</a>
+  </div>
+
+
+</div>
+    </div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">New Habit</div>
+    <label>Habit Name</label>
+    <input type="text" id="habitNameInput" placeholder="e.g. Morning Walk" maxlength="30">
+    <label>Icon</label>
+    <div class="emoji-picker" id="emojiPicker"></div>
+    <label>Color</label>
+    <div class="color-picker-row" id="colorPicker"></div>
+    <label>Category</label>
+    <select id="habitCatSelect"></select>
+    <label>Frequency</label>
+    <select id="habitFreqSelect" onchange="toggleCustomDays()">
+      <option value="daily">Daily</option>
+      <option value="weekdays">Weekdays only (Mon–Fri)</option>
+      <option value="weekends">Weekends only (Sat–Sun)</option>
+      <option value="custom">Custom days</option>
+    </select>
+    <div id="customDaysRow" style="display:none;margin-top:8px;">
+      <label>Days</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd0"><input type="checkbox" id="cd0"> Sun</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd1"><input type="checkbox" id="cd1"> Mon</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd2"><input type="checkbox" id="cd2"> Tue</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd3"><input type="checkbox" id="cd3"> Wed</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd4"><input type="checkbox" id="cd4"> Thu</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd5"><input type="checkbox" id="cd5"> Fri</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd6"><input type="checkbox" id="cd6"> Sat</label>
+      </div>
+    </div>
+    <label>Weekly Goal (days/week)</label>
+    <input type="number" id="habitWeekGoal" value="5" min="1" max="7" style="width:70px;">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="modalSaveBtn" onclick="saveHabit()">Add Habit</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="noteModal">
+  <div class="modal" style="width:370px;">
+    <div class="modal-title" id="noteModalTitle">Habit Note</div>
+    <label>Note for this month</label>
+    <textarea id="noteModalText" style="min-height:110px;resize:vertical;"
+      placeholder="How did this habit go?"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeNoteModal()">Cancel</button>
+      <button class="btn-save" onclick="saveNoteModal()">Save</button>
+    </div>
+  </div>
+</div>
+
+
+  <div id="achievementToast">
+    <div class="ach-icon">🏆</div>
+    <div>
+      <div class="ach-label">Achievement Unlocked!</div>
+      <div class="ach-title"></div>
+      <div class="ach-desc"></div>
+    </div>
+  </div>
+
+  <div id="shareCardOverlay">
+    <div class="share-card-modal">
+      <div class="share-card-title">Share Your Month</div>
+      <div class="share-card-sub">Download a beautiful card of your monthly progress</div>
+      <canvas id="shareCanvas"></canvas>
+      <div class="share-btns">
+        <button class="share-btn primary" onclick="downloadShareCard()">⬇ Download Card</button>
+        <button class="share-btn secondary" onclick="closeShareCard()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="onboardingOverlay">
+    <div class="ob-card">
+      <div class="ob-dots">
+        <div class="ob-dot active"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+      </div>
+
+      <div class="ob-step active">
+        <div class="ob-title">Welcome to your Habit Tracker 👋</div>
+        <div class="ob-sub">Build consistency, track progress, and become the person you want to be. Let's set up your first habits in 2 minutes.</div>
+        <div class="ob-btns">
+          <button class="ob-btn primary" onclick="obNext()">Let's go →</button>
+        </div>
+      </div>
+
+      <div class="ob-step">
+        <div class="ob-title">Pick your habits</div>
+        <div class="ob-sub">Choose habits to start with. You can always add or remove later.</div>
+        <div class="ob-habit-grid" id="obHabitGrid"></div>
+        <div class="ob-btns">
+          <button class="ob-btn secondary" onclick="obBack()">← Back</button>
+          <button class="ob-btn primary" onclick="obNext()">Continue →</button>
+        </div>
+      </div>
+
+      <div class="ob-step">
+        <div class="ob-title">Set your wake time</div>
+        <div class="ob-sub">When do you start your day? We'll use this for your reminder notification.</div>
+        <div class="ob-time-wrap">
+          <label>I wake up at</label>
+          <input type="time" id="obWakeTime" value="06:00">
+        </div>
+        <div class="ob-btns">
+          <button class="ob-btn secondary" onclick="obBack()">← Back</button>
+          <button class="ob-btn primary" onclick="finishOnboarding()">Start tracking 🎯</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="accountabilityModal">
+    <div class="acct-card">
+      <div class="acct-title">Accountability Partner</div>
+      <div class="acct-sub">Share a read-only view of your habit tracker with a friend, coach, or mentor. They can see your progress in real time.</div>
+      <div class="acct-link-row">
+        <input type="text" id="shareLink" readonly placeholder="Your share link will appear here…">
+        <button onclick="copyShareLink()">Copy Link</button>
+      </div>
+      <div class="acct-note">
+        ℹ Your partner can only view your data — they cannot edit or modify anything.<br>
+        To disable sharing, simply change your password or contact us.
+      </div>
+      <button class="acct-close" onclick="closeAccountability()">Close</button>
+    </div>
+  </div>
+
+  </div>
+
+  <div class="sync-indicator" id="syncIndicator">
+    <div class="sync-dot" id="syncDot"></div>
+    <span id="syncText">Saved</span>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script src="js/supabase.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/habits.js"></script>
+  <script src="js/categories.js"></script>
+  <script src="js/journal.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/animations.js"></script>
+  <script src="js/achievements.js"></script>
+  <script src="js/heatmap.js"></script>
+  <script src="js/bestday.js"></script>
+  <script src="js/sharecard.js"></script>
+  <script src="js/onboarding.js"></script>
+  <script src="js/accountability.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,51 @@
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">New Habit</div>
+    <label>Habit Name</label>
+    <input type="text" id="habitNameInput" placeholder="e.g. Morning Walk" maxlength="30">
+    <label>Icon</label>
+    <div class="emoji-picker" id="emojiPicker"></div>
+    <label>Color</label>
+    <div class="color-picker-row" id="colorPicker"></div>
+    <label>Category</label>
+    <select id="habitCatSelect"></select>
+    <label>Frequency</label>
+    <select id="habitFreqSelect" onchange="toggleCustomDays()">
+      <option value="daily">Daily</option>
+      <option value="weekdays">Weekdays only (Mon–Fri)</option>
+      <option value="weekends">Weekends only (Sat–Sun)</option>
+      <option value="custom">Custom days</option>
+    </select>
+    <div id="customDaysRow" style="display:none;margin-top:8px;">
+      <label>Days</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd0"><input type="checkbox" id="cd0"> Sun</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd1"><input type="checkbox" id="cd1"> Mon</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd2"><input type="checkbox" id="cd2"> Tue</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd3"><input type="checkbox" id="cd3"> Wed</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd4"><input type="checkbox" id="cd4"> Thu</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd5"><input type="checkbox" id="cd5"> Fri</label>
+        <label style="all:unset;display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;" for="cd6"><input type="checkbox" id="cd6"> Sat</label>
+      </div>
+    </div>
+    <label>Weekly Goal (days/week)</label>
+    <input type="number" id="habitWeekGoal" value="5" min="1" max="7" style="width:70px;">
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="modalSaveBtn" onclick="saveHabit()">Add Habit</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="noteModal">
+  <div class="modal" style="width:370px;">
+    <div class="modal-title" id="noteModalTitle">Habit Note</div>
+    <label>Note for this month</label>
+    <textarea id="noteModalText" style="min-height:110px;resize:vertical;"
+      placeholder="How did this habit go?"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeNoteModal()">Cancel</button>
+      <button class="btn-save" onclick="saveNoteModal()">Save</button>
+    </div>
+  </div>
+</div>

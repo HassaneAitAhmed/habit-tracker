@@ -1,0 +1,28 @@
+<div class="journal-page">
+  <div class="section-label">Daily Journal</div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+    <button onclick="jPrev()"
+      style="background:var(--card);border:1px solid var(--border);color:var(--ink);width:27px;height:27px;border-radius:6px;cursor:pointer;font-size:14px;">&#8249;</button>
+    <span id="jMonthLabel"
+      style="font-family:var(--font-head);font-size:15px;min-width:130px;text-align:center;color:var(--ink);"></span>
+    <button onclick="jNext()"
+      style="background:var(--card);border:1px solid var(--border);color:var(--ink);width:27px;height:27px;border-radius:6px;cursor:pointer;font-size:14px;">&#8250;</button>
+  </div>
+
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="journalDayPicker"></div>
+
+  <div class="journal-editor">
+    <div class="journal-editor-header">
+      <div class="journal-date-label" id="journalDateLabel">Select a day</div>
+      <button class="save-note-btn" onclick="saveJournalNote()">Save</button>
+    </div>
+    <textarea class="journal-textarea" id="journalTextarea"
+      placeholder="Write your thoughts, reflections, wins…"></textarea>
+  </div>
+
+  <div style="margin-top:18px;">
+    <div class="section-label">Recent Entries</div>
+    <div id="journalEntryList"></div>
+  </div>
+</div>
