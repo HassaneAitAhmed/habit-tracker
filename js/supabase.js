@@ -1,5 +1,5 @@
-const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL      = 'https://rhygsemxuwwbsxllwxfq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoeWdzZW14dXd3YnN4bGx3eGZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2MjM4NDIsImV4cCI6MjA4OTE5OTg0Mn0.f4C1IjRXUwwimKW94eBwR4ILi0ipn1_etY1mMFuf3dg';
 
 if (typeof supabase === 'undefined') {
   document.getElementById('loadingOverlay').innerHTML = `
