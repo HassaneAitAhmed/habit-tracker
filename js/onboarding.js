@@ -1,4 +1,3 @@
-
 const STARTER_HABITS = [
   { name:'Wake up at 06:00', emoji:'⏰', color:'#C4924A' },
   { name:'Cold Shower',      emoji:'🚿', color:'#185FA5' },

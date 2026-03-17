@@ -1,4 +1,3 @@
-
 function popCheckbox(el) {
   el.style.transform = 'scale(1.35)';
   el.style.transition = 'transform .12s cubic-bezier(.34,1.56,.64,1)';

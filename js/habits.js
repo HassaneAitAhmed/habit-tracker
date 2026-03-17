@@ -1,4 +1,3 @@
-
 async function toggleCheck(habitId, day) {
   const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   const key = `${habitId}__${dateStr}`;
@@ -15,12 +14,15 @@ async function toggleCheck(habitId, day) {
     checks[key] = data.id;
   }
   setSyncState('saved');
+  
   const justChecked = !!checks[key];
   renderTable(); renderStats(); renderCharts(); renderSidebar();
   if (typeof renderAchievements === 'function') renderAchievements();
+  
   setTimeout(() => {
     const boxes = document.querySelectorAll('.check-box.checked');
     if (justChecked && boxes.length > 0 && typeof popCheckbox === 'function') {
+      
       const allBoxes = document.querySelectorAll('.day-cell .check-box');
       allBoxes.forEach(b => {
         if (b.onclick?.toString().includes(String(day) + ')')) {
@@ -51,6 +53,13 @@ function openModal(id) {
   catSel.innerHTML = `<option value="">No Category</option>` +
     categories.map(c => `<option value="${c.id}" ${h && h.category_id === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
   document.getElementById('habitFreqSelect').value = h ? h.freq : 'daily';
+  const ct = document.getElementById('habitCompletionType');
+  if (ct) ct.value = h?.completion_type || 'check';
+  const ctr = document.getElementById('habitCompletionTarget');
+  if (ctr) ctr.value = h?.completion_target || 1;
+  const cu = document.getElementById('habitCompletionUnit');
+  if (cu) cu.value = h?.completion_unit || '';
+  if (typeof toggleCompletionFields === 'function') toggleCompletionFields();
   toggleCustomDays();
   if (h && h.customDays) h.customDays.forEach(d => { const cb = document.getElementById('cd' + d); if (cb) cb.checked = true; });
   document.getElementById('modalOverlay').classList.add('open');
@@ -91,34 +100,47 @@ async function saveHabit() {
     category_id: document.getElementById('habitCatSelect').value || null,
     freq,
     custom_days: customDays,
-    week_goal:   parseInt(document.getElementById('habitWeekGoal').value) || 5,
+    week_goal:        parseInt(document.getElementById('habitWeekGoal').value) || 5,
+    completion_type:  document.getElementById('habitCompletionType')?.value  || 'check',
+    completion_unit:  document.getElementById('habitCompletionUnit')?.value  || '',
+    completion_target: parseInt(document.getElementById('habitCompletionTarget')?.value) || 1,
   };
   setSyncState('saving');
   if (editingHabitId) {
     const { error } = await sb.from('habits').update(payload).eq('id', editingHabitId);
     if (error) { setSyncState('error'); showToast('Error saving', 'error'); return; }
     const idx = habits.findIndex(h => h.id === editingHabitId);
-    if (idx >= 0) habits[idx] = { ...habits[idx], ...payload, customDays, weekGoal: payload.week_goal };
+    if (idx >= 0) habits[idx] = { ...habits[idx], ...payload, customDays, weekGoal: payload.week_goal, completion_type: payload.completion_type, completion_unit: payload.completion_unit, completion_target: payload.completion_target };
   } else {
     const { data, error } = await sb.from('habits').insert(payload).select().single();
     if (error) { setSyncState('error'); showToast('Error saving', 'error'); return; }
-    habits.push({ ...data, customDays, weekGoal: data.week_goal });
+    habits.push({ ...data, customDays, weekGoal: data.week_goal, completion_type: data.completion_type||'check', completion_unit: data.completion_unit||'', completion_target: data.completion_target||1 });
   }
   setSyncState('saved');
   closeModal();
-  renderAll();
+  if (typeof isMobile === 'function' && isMobile()) {
+    mobAfterSave();
+  } else {
+    renderAll();
+  }
   showToast(editingHabitId ? 'Habit updated!' : `"${name}" added!`);
 }
 
 async function deleteHabit(id) {
-  if (!confirm('Delete this habit and all its data?')) return;
+  const ok = await showConfirm('Delete this habit and all its data?', 'Delete', 'Cancel', true);
+  if (!ok) return;
   setSyncState('saving');
   const { error } = await sb.from('habits').delete().eq('id', id);
   if (error) { setSyncState('error'); return; }
   habits = habits.filter(h => h.id !== id);
   Object.keys(checks).forEach(k => { if (k.startsWith(id + '__')) delete checks[k]; });
   setSyncState('saved');
-  renderAll();
+  if (typeof isMobile === 'function' && isMobile()) {
+    renderMobToday();
+    if (mobileTab==='settings') renderMobSettings();
+  } else {
+    renderAll();
+  }
 }
 
 function openNoteModal(hid) {

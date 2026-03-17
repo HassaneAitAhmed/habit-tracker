@@ -1,12 +1,10 @@
-
-
 const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 
 function renderBestDay() {
   const el = document.getElementById('bestDayChart');
   if (!el) return;
   const days = getDays(viewYear, viewMonth);
-  const scores = [0,0,0,0,0,0,0]; // Sun-Sat totals
+  const scores = [0,0,0,0,0,0,0]; 
   const counts = [0,0,0,0,0,0,0];
 
   for (let d = 1; d <= days; d++) {

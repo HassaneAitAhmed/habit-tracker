@@ -1,4 +1,3 @@
-
 function toggleDark() {
   settings.dark = !settings.dark;
   applyDarkMode();
@@ -16,16 +15,21 @@ function applyDarkMode() {
 }
 
 function showTab(name) {
+  
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
 
+  
   const page = document.getElementById('page-' + name);
   if (page) page.classList.add('active');
 
+  
   const tabIndex = { dashboard: 0, journal: 1, settings: 2 }[name];
   const tabs     = document.querySelectorAll('.tab');
   if (tabs[tabIndex]) tabs[tabIndex].classList.add('active');
 
+  
   if (name === 'journal')  renderJournal();
   if (name === 'settings') renderSettings();
 }
@@ -74,6 +78,7 @@ function nextQuote() {
   const el = document.getElementById('quoteText');
   if (el) el.textContent = QUOTES[quoteIdx];
 
+  
   const btn = document.querySelector('.quote-refresh');
   if (btn) {
     btn.style.transform = 'rotate(180deg)';

@@ -1,4 +1,3 @@
-
 function renderCatFilter() {
   const sel = document.getElementById('catFilter');
   if (!sel) return;
@@ -28,7 +27,8 @@ async function updateCatName(id, name) {
 }
 
 async function deleteCategory(id) {
-  if (!confirm('Delete this category?')) return;
+  const ok = await showConfirm('Delete this category?', 'Delete', 'Cancel', true);
+  if (!ok) return;
   await sb.from('categories').delete().eq('id', id);
   categories = categories.filter(c => c.id !== id);
   habits.forEach(h => { if (h.category_id === id) h.category_id = null; });

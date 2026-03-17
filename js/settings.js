@@ -1,5 +1,5 @@
-
 function renderSettings() {
+  
   let ch = '';
   categories.forEach(c => {
     ch += `<div class="cat-row">
@@ -12,21 +12,30 @@ function renderSettings() {
   const catMgr = document.getElementById('catManager');
   if (catMgr) catMgr.innerHTML = ch;
 
+  
   let hList = '';
   habits.forEach(h => {
     const cat = getCat(h.category_id);
-    hList += `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);">
+    const typeLabel = h.completion_type === 'count' ? `${h.completion_target} ${h.completion_unit}` : h.completion_type === 'duration' ? `${h.completion_target} ${h.completion_unit}` : '';
+    hList += `<div class="drag-habit-row" data-habit-id="${h.id}" style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid var(--border);">
+      <div class="drag-handle" title="Drag to reorder">⠿</div>
       <span style="font-size:15px">${h.emoji}</span>
-      <div style="flex:1">
-        <div style="font-size:12px">${h.name}</div>
-        ${cat ? `<div style="font-size:10px;color:var(--ink3)">📂 ${cat.name}</div>` : ''}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:500">${h.name}</div>
+        <div style="font-size:10px;color:var(--ink3);font-family:var(--font-mono)">
+          ${cat ? '📂 ' + cat.name + ' · ' : ''}${h.freq}${typeLabel ? ' · ' + typeLabel : ''}
+        </div>
       </div>
       <button class="export-btn" onclick="openModal('${h.id}')" style="font-size:10px;padding:3px 9px;">Edit</button>
     </div>`;
   });
   const hsl = document.getElementById('habitSettingsList');
-  if (hsl) hsl.innerHTML = hList || '<div style="color:var(--ink3);font-size:12px;padding:8px 0;">No habits yet.</div>';
+  if (hsl) {
+    hsl.innerHTML = hList || '<div style="color:var(--ink3);font-size:12px;padding:8px 0;">No habits yet.</div>';
+    if (typeof initDragOrder === 'function') setTimeout(initDragOrder, 50);
+  }
 
+  
   const rt = document.getElementById('reminderToggle');
   const rtr = document.getElementById('reminderTimeRow');
   const rti = document.getElementById('reminderTime');
@@ -37,6 +46,7 @@ function renderSettings() {
     const se = document.getElementById('settingsEmail');
     if (se) se.textContent = currentUser.email;
   }
+  
   ['light','dark','pink'].forEach(t => {
     const b = document.getElementById('themeOpt_' + t);
     if (b) b.classList.toggle('active', (settings.theme || 'light') === t);

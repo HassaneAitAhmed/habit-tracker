@@ -1,4 +1,3 @@
-
 function getDays(y, m) {
   return new Date(y, m + 1, 0).getDate();
 }
@@ -97,27 +96,34 @@ function exportCSV() {
   showToast('CSV exported!');
 }
 
-const THEME_ICONS  = { light: '☀️', dark: '🌙', pink: '🌸' };
+const THEME_ICONS  = { light: '🌙', dark: '🌸', pink: '☀️' };
 const THEME_TITLES = { light: 'Switch to Dark mode', dark: 'Switch to Pink mode', pink: 'Switch to Light mode' };
 
 function applyTheme() {
+  const mobBtn = document.getElementById('mobThemeBtn');
+  const icons = { light: '🌙', dark: '🌸', pink: '☀️' };
+  if (mobBtn) mobBtn.textContent = icons[settings.theme||'light'] || '🌙';
   const theme = settings.theme || 'light';
 
+  
   document.body.classList.remove('dark', 'pink');
   if (theme === 'dark') document.body.classList.add('dark');
   if (theme === 'pink') document.body.classList.add('pink');
 
+  
   const btn = document.getElementById('themeBtn') || document.getElementById('darkToggleBtn');
   if (btn) {
     btn.textContent = THEME_ICONS[theme] || '🌙';
     btn.title = THEME_TITLES[theme] || 'Toggle theme';
   }
 
+  
   ['light','dark','pink'].forEach(t => {
     const b = document.getElementById('themeOpt_' + t);
     if (b) b.classList.toggle('active', theme === t);
   });
 
+  
   try { localStorage.setItem('ht_theme', theme); } catch(e) {}
 }
 
@@ -141,4 +147,10 @@ function setTheme(theme) {
   settings.dark = (theme === 'dark');
   applyTheme();
   if (typeof saveSettingsDB === 'function') saveSettingsDB();
+}
+
+function toggleCompletionFields() {
+  const type = document.getElementById('habitCompletionType')?.value;
+  const row  = document.getElementById('completionTargetRow');
+  if (row) row.style.display = (type === 'count' || type === 'duration') ? 'block' : 'none';
 }

@@ -41,13 +41,16 @@ async function cycleMood(type, dateStr) {
     newMot  = curMot  === 0 ? 5 : curMot  >= 10 ? 0 : curMot  + 1;
   }
 
+  
   if (newMood) moods[`mood__${dateStr}`]         = newMood;
   else         delete moods[`mood__${dateStr}`];
 
   if (newMot)  moods[`motivation__${dateStr}`]   = newMot;
   else         delete moods[`motivation__${dateStr}`];
 
+  
   renderMood();
 
+  
   await dbSaveMood(dateStr, newMood || null, newMot || null);
 }

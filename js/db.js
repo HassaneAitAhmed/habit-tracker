@@ -1,4 +1,3 @@
-
 function withTimeout(promise, ms, label) {
   return Promise.race([
     promise,
@@ -75,9 +74,16 @@ async function loadAll() {
   if (setR.data) settings = { dark: setR.data.dark_mode, theme: setR.data.theme || (setR.data.dark_mode ? 'dark' : 'light'), reminder: setR.data.reminder_on, reminderTime: setR.data.reminder_time || '20:00' };
 
   console.log('[loadAll] Done. habits:', habits.length, '| checks:', Object.keys(checks).length);
+  
+  if (typeof loadFreezes     === 'function') await loadFreezes();
+  if (typeof grantMonthlyFreezes === 'function') await grantMonthlyFreezes();
   showLoading(false);
   applyDarkMode();
-  renderAll();
+  if (typeof isMobile === 'function' && isMobile()) {
+    renderMobileApp();
+  } else {
+    renderAll();
+  }
   if (settings.reminder) scheduleReminder();
 }
 
@@ -104,8 +110,8 @@ async function saveMoodDB(logDate, moodVal, motivationVal) {
 }
 
 async function deleteAllData() {
-  if (!confirm('Delete ALL your habits and data permanently?')) return;
-  if (!confirm('This cannot be undone. Are you sure?')) return;
+  const ok = await showConfirm('Delete ALL habits and data permanently? This cannot be undone.', 'Delete Everything', 'Cancel', true);
+  if (!ok) return;
   setSyncState('saving');
   await Promise.all([
     sb.from('habit_checks').delete().eq('user_id', currentUser.id),

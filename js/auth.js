@@ -1,4 +1,3 @@
-
 function switchAuthTab(mode) {
   authMode = mode;
   document.querySelectorAll('.auth-tab').forEach((t, i) =>
@@ -55,7 +54,8 @@ async function signUp() {
 }
 
 async function signOut() {
-  if (!confirm('Sign out?')) return;
+  const ok = await showConfirm('Sign out of your account?', 'Sign Out', 'Cancel', false);
+  if (!ok) return;
   await sb.auth.signOut();
   location.reload();
 }

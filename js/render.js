@@ -1,4 +1,3 @@
-
 function renderAll() {
   renderMonthLabel();
   renderTable();
@@ -10,6 +9,7 @@ function renderAll() {
   renderSettings();
   renderJournal();
   if (typeof renderAchievements === 'function') renderAchievements();
+  if (typeof renderMobileToday === 'function') renderMobileToday();
   if (typeof renderBestDay     === 'function') renderBestDay();
   if (typeof renderHeatmap     === 'function') renderHeatmap();
 }
@@ -26,14 +26,16 @@ function renderTable() {
   const catFilter = document.getElementById('catFilter')?.value || '';
   const filtered  = habits.filter(h => !catFilter || h.category_id === catFilter);
 
+  
   let hd = `<tr><th class="habit-col">My Habits</th>`;
   for (let d = 1; d <= days; d++) {
     const isT = todayThis && d === todayD;
     hd += `<th style="${isT ? 'background:rgba(196,146,74,.18);color:var(--gold);' : ''}">${d}</th>`;
   }
-  hd += `<th>W.Goal</th><th>%</th><th style="min-width:60px">Bar</th></tr>`;
+  hd += `<th title="Pomodoro">🍅</th><th>W.Goal</th><th>%</th><th style="min-width:60px">Bar</th></tr>`;
   document.getElementById('habitsHead').innerHTML = hd;
 
+  
   let bd = '';
   filtered.forEach(h => {
     const cat        = getCat(h.category_id);
@@ -61,8 +63,12 @@ function renderTable() {
     if (cat) bd += `<span class="cat-dot" style="background:${cat.color}"></span>`;
     bd += `<span class="habit-emoji">${h.emoji}</span>${h.name}`;
     if (freqLabel) bd += `<span class="freq-badge">${freqLabel}</span>`;
+    if (h.completion_type && h.completion_type !== 'check') {
+      bd += `<span class="qty-badge">${h.completion_target} ${h.completion_unit}</span>`;
+    }
     bd += `<button class="note-btn ${hasNote ? 'has-note' : ''}" onclick="openNoteModal('${h.id}')" title="Note">📋</button>`;
     bd += `<button class="delete-btn" onclick="deleteHabit('${h.id}')">✕</button></td>`;
+    bd += `<td class="pomo-cell"><button class="pomo-table-btn" onclick="openPomodoro('${h.id}','${h.name.replace(/'/g, '')}')" title="Start Pomodoro">🍅</button></td>`;
 
     for (let d = 1; d <= days; d++) {
       const isT    = todayThis && d === todayD;
@@ -85,7 +91,7 @@ function renderTable() {
   });
 
   if (!filtered.length) {
-    bd = `<tr><td colspan="40">
+    bd = `<tr><td colspan="41">
       <div class="empty-state">
         <div class="empty-state-art">
           <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -100,6 +106,7 @@ function renderTable() {
     </td></tr>`;
   }
   document.getElementById('habitsBody').innerHTML = bd;
+  
   setTimeout(() => {
     document.querySelectorAll('.mini-bar-fill').forEach(el => {
       const w = el.style.width;
@@ -219,6 +226,7 @@ function renderSidebar() {
   const todayThis = today.getFullYear() === viewYear && today.getMonth() === viewMonth;
   const todayD    = todayThis ? today.getDate() : days;
 
+  
   let streak = 0;
   for (let d = todayD; d >= 1; d--) {
     let all = habits.length > 0;
@@ -240,6 +248,7 @@ function renderSidebar() {
   }
   document.getElementById('streakGrid').innerHTML = sg;
 
+  
   const rows = habits.map(h => {
     let dn = 0, ap = 0;
     for (let d = 1; d <= days; d++) if (isApplicable(h, viewYear, viewMonth, d)) { ap++; if (isChecked(h.id, d)) dn++; }
@@ -261,4 +270,77 @@ function renderSidebar() {
       <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3)">${r.pct}%</div>
     </div>`
   ).join('') || '<div style="color:var(--ink3);font-size:11px">No habits</div>';
+}
+
+function renderMobileToday() {
+  const el = document.getElementById('mobileTodayList');
+  const dateEl = document.getElementById('mobileTodayDate');
+  const progEl = document.getElementById('mobileTodayProgress');
+  if (!el) return;
+
+  const todayD = today.getDate();
+  const todayM = today.getMonth();
+  const todayY = today.getFullYear();
+  const DAY_NAMES = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const dayName = DAY_NAMES[today.getDay()];
+
+  if (dateEl) dateEl.textContent = dayName + ', ' + MONTHS[todayM] + ' ' + todayD;
+
+  
+  const applicable = habits.filter(h => isApplicable(h, todayY, todayM, todayD));
+  let done = 0;
+  applicable.forEach(h => { if (isChecked(h.id, todayD)) done++; });
+
+  if (progEl) {
+    const pct = applicable.length > 0 ? Math.round((done / applicable.length) * 100) : 0;
+    progEl.textContent = done + ' / ' + applicable.length + ' completed · ' + pct + '%';
+  }
+
+  if (!applicable.length) {
+    el.innerHTML = '<div class="mobile-empty">No habits for today. <span onclick="openModal()" style="color:var(--accent);cursor:pointer">Add one →</span></div>';
+    return;
+  }
+
+  let html = '';
+  applicable.forEach(h => {
+    const checked = isChecked(h.id, todayD);
+    const cat = getCat(h.category_id);
+    const streak = getMobileStreak(h);
+    html += `<div class="mobile-habit-row ${checked ? 'checked' : ''}">
+      <div class="mobile-habit-left" onclick="toggleCheckMobile('${h.id}', ${todayD})" style="flex:1;display:flex;align-items:center;gap:12px;">
+        <div class="mobile-check ${checked ? 'checked' : ''}">
+          ${checked ? '<svg width="14" height="14" viewBox="0 0 14 14"><polyline points="2,7 5.5,10.5 12,3" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+        </div>
+        <span class="mobile-habit-emoji">${h.emoji}</span>
+        <div style="min-width:0;">
+          <div class="mobile-habit-name ${checked ? 'done' : ''}">${h.name}</div>
+          ${cat ? '<div class="mobile-habit-cat">' + cat.name + '</div>' : ''}
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <button class="mobile-pomo-btn" onclick="event.stopPropagation();openPomodoro('${h.id}','${h.name.replace(/'/g,'')}')" title="Start Pomodoro">🍅</button>
+        <div class="mobile-habit-streak" style="background:${h.color || 'var(--accent)'}20;color:${h.color || 'var(--accent)'}">
+          ${streak}d
+        </div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function getMobileStreak(h) {
+  const todayD = today.getDate();
+  const todayM = today.getMonth();
+  const todayY = today.getFullYear();
+  let streak = 0;
+  for (let d = todayD; d >= 1; d--) {
+    if (isApplicable(h, todayY, todayM, d) && isChecked(h.id, d)) streak++;
+    else if (isApplicable(h, todayY, todayM, d)) break;
+  }
+  return streak;
+}
+
+async function toggleCheckMobile(habitId, day) {
+  await toggleCheck(habitId, day);
+  renderMobileToday();
 }

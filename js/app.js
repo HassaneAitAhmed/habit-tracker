@@ -2,13 +2,13 @@
   const saved = localStorage.getItem('ht_theme');
   if (saved === 'dark') document.body.classList.add('dark');
   if (saved === 'pink') document.body.classList.add('pink');
-  const icons = { light: '☀️', dark: '🌙', pink: '🌸' };
+  
+  const icons = { light: '🌙', dark: '🌸', pink: '☀️' };
   window.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('themeBtn') || document.getElementById('darkToggleBtn');
-    if (btn && saved) btn.textContent = icons[saved] || '☀️';
+    if (btn && saved) btn.textContent = icons[saved] || '🌙';
   });
 })();
-
 
 document.getElementById('prevMonth').addEventListener('click', () => {
   viewMonth--;
@@ -42,6 +42,17 @@ function showApp(user) {
   document.getElementById('userAvatar').textContent   = user.email[0].toUpperCase();
   document.getElementById('quoteText').textContent    = QUOTES[quoteIdx];
 
+  if (isMobile()) {
+    document.getElementById('appScreen').style.display  = 'none';
+    document.getElementById('mobileApp').style.display  = 'block';
+    const av = document.getElementById('mobAvatar');
+    if (av) av.textContent = user.email[0].toUpperCase();
+    const du = document.getElementById('mobDrawerUser');
+    if (du) du.textContent = user.email;
+    applyTheme();
+  }
+
+  
   const obGrid = document.getElementById('obHabitGrid');
   if (obGrid && typeof STARTER_HABITS !== 'undefined') {
     obGrid.innerHTML = STARTER_HABITS.map((h, i) =>
@@ -104,6 +115,7 @@ sb.auth.onAuthStateChange((event, session) => {
     return;
   }
 
+  
   if (event === 'SIGNED_IN' && session?.user) {
     setTimeout(() => { if (!appInitialized) showApp(session.user); }, 300);
   }

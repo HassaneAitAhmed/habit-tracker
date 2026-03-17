@@ -19,6 +19,7 @@
     <div class="loading-text">Loading your habits…</div>
   </div>
 
+  
   <div id="authScreen" style="display:none;">
     <div class="auth-card">
   <div class="auth-logo">DISCIPLINE<span>.</span></div>
@@ -62,8 +63,10 @@
 </div>
   </div>
 
+  
   <div id="appScreen" style="display:none;">
 
+    
 <div class="quote-banner">
   <div class="quote-text" id="quoteText"></div>
   <button class="quote-refresh" onclick="nextQuote()" title="Next quote">↻</button>
@@ -80,9 +83,10 @@
       <div class="month-label" id="monthLabel"></div>
       <button id="nextMonth">&#8250;</button>
     </div>
-    <button class="icon-btn" onclick="openShareCard()" title="Share Month Card">✦</button>
-    <button class="icon-btn" onclick="openAccountability()" title="Accountability Partner">👁</button>
-    <button class="icon-btn" onclick="exportCSV()" title="Export CSV">↓</button>
+    <button class="icon-btn hide-xs" onclick="openShareCard()" title="Share Month Card">✦</button>
+    <button class="icon-btn hide-xs" onclick="openAccountability()" title="Accountability Partner">👁</button>
+    <button class="icon-btn hide-xs" onclick="exportCSV()" title="Export CSV">↓</button>
+    <button class="icon-btn hide-xs" onclick="openMobTemplates()" title="Habit Templates">📋</button>
     <button class="icon-btn" id="themeBtn" onclick="cycleTheme()" title="Cycle theme: Light → Dark → Pink">🌙</button>
     <div class="user-pill" onclick="signOut()">
       <div class="user-avatar" id="userAvatar">?</div>
@@ -104,6 +108,7 @@
 
     <div class="page active" id="page-dashboard">
       <div class="main">
+  
   <div>
     <div class="section-label">Overview</div>
     <div class="stats-row">
@@ -137,6 +142,7 @@
       </div>
     </div>
 
+    
     <div class="chart-row">
       <div class="chart-card">
         <div class="chart-title">Daily Progress</div>
@@ -150,31 +156,48 @@
       </div>
     </div>
 
-    <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
-      <span>My Habits</span>
-      <select id="catFilter"
-        style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--ink);font-size:11px;font-family:var(--font-mono);"
-        onchange="renderTable()">
-        <option value="">All Categories</option>
-      </select>
-    </div>
-    <div class="habits-card">
-      <div class="habits-header">
-        <div class="habits-title">Daily Check-In</div>
-        <button class="add-btn" onclick="openModal()">+ Add Habit</button>
+    
+    <div class="mobile-today-view" id="mobileTodayView">
+      <div class="mobile-today-header">
+        <div>
+          <div class="mobile-today-title" id="mobileTodayDate"></div>
+          <div class="mobile-today-sub" id="mobileTodayProgress"></div>
+        </div>
+        <button class="add-btn" onclick="openModal()" style="margin-left:auto;">+ Add</button>
       </div>
-      <div style="overflow-x:auto;">
-        <table class="habits-table">
-          <thead id="habitsHead"></thead>
-          <tbody id="habitsBody"></tbody>
-        </table>
+      <div id="mobileTodayList"></div>
+    </div>
+
+    
+    <div class="desktop-only">
+      <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>My Habits</span>
+        <select id="catFilter"
+          style="padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--ink);font-size:11px;font-family:var(--font-mono);"
+          onchange="renderTable()">
+          <option value="">All Categories</option>
+        </select>
+      </div>
+      <div class="habits-card">
+        <div class="habits-header">
+          <div class="habits-title">Daily Check-In</div>
+          <button class="add-btn" onclick="openModal()">+ Add Habit</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="habits-table">
+            <thead id="habitsHead"></thead>
+            <tbody id="habitsBody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
+    
     <div class="section-label">Mental State</div>
     <div class="mood-card" id="moodRows"></div>
   </div>
 
+  
   <div class="sidebar">
     <div class="side-card">
       <div class="side-card-title">Overall Progress</div>
@@ -224,6 +247,7 @@
       <div class="side-card-title">Achievements</div>
       <div class="badge-grid" id="achievementsList"></div>
     </div>
+
   </div>
 </div>
     </div>
@@ -263,6 +287,7 @@
       <div class="settings-page">
   <div class="section-label">Settings &amp; Customization</div>
 
+        
       <div class="settings-section">
         <div class="settings-section-title">Appearance</div>
         <div class="setting-row">
@@ -278,6 +303,7 @@
         </div>
       </div>
 
+  
   <div class="settings-section">
     <div class="settings-section-title">Reminders</div>
     <div class="setting-row">
@@ -295,18 +321,20 @@
     </div>
   </div>
 
-  <!-- CATEGORIES -->
+  
   <div class="settings-section">
     <div class="settings-section-title">Categories</div>
     <div class="cat-manager" id="catManager"></div>
     <button class="add-cat-btn" onclick="addCategory()">+ Add Category</button>
   </div>
 
+  
   <div class="settings-section">
     <div class="settings-section-title">Manage Habits</div>
     <div id="habitSettingsList"></div>
   </div>
 
+  
   <div class="settings-section">
     <div class="settings-section-title">Account</div>
     <div class="setting-row">
@@ -335,7 +363,6 @@
 </div>
     </div>
 
-
     <div class="page" id="page-heatmap">
       <div class="heatmap-page">
         <div class="section-label" style="display:flex;align-items:center;justify-content:space-between;">
@@ -343,24 +370,14 @@
           <button onclick="openShareCard()" style="background:var(--accent);border:none;color:#F5F2EC;font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:.08em;padding:6px 16px;border-radius:7px;cursor:pointer;">Share Month Card ✦</button>
         </div>
         <div class="heatmap-wrap">
-          <div style="display:flex;gap:4px;">
-            <div class="hm-dow">
-              <span></span><span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3)">M</span><span></span>
-              <span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3)">W</span><span></span>
-              <span style="font-family:var(--font-mono);font-size:9px;color:var(--ink3)">F</span><span></span>
-            </div>
-            <div>
-              <div class="heatmap-months" id="heatmapMonths"></div>
-              <div id="heatmapGrid"></div>
-            </div>
-          </div>
-          <div class="heatmap-legend">
+          <div id="heatmapCanvas" style="width:100%;overflow:hidden;"></div>
+          <div class="heatmap-legend" style="margin-top:10px;">
             <span>Less</span>
-            <div class="hm-legend-cell" style="background:var(--surface)"></div>
-            <div class="hm-legend-cell hm-cell level-1"></div>
-            <div class="hm-legend-cell hm-cell level-2"></div>
-            <div class="hm-legend-cell hm-cell level-3"></div>
-            <div class="hm-legend-cell hm-cell level-4"></div>
+            <div class="hm-legend-cell" style="background:var(--surface);width:12px;height:12px;border-radius:2px;display:inline-block;"></div>
+            <div class="hm-legend-cell" style="background:var(--gold-light);width:12px;height:12px;border-radius:2px;display:inline-block;"></div>
+            <div class="hm-legend-cell" style="background:var(--gold);width:12px;height:12px;border-radius:2px;display:inline-block;opacity:.9"></div>
+            <div class="hm-legend-cell" style="background:var(--accent);width:12px;height:12px;border-radius:2px;display:inline-block;opacity:.75"></div>
+            <div class="hm-legend-cell" style="background:var(--accent);width:12px;height:12px;border-radius:2px;display:inline-block;"></div>
             <span>More</span>
           </div>
           <div id="heatmapSummary"></div>
@@ -383,6 +400,7 @@
     <div class="page" id="page-about">
       <div class="about-page">
 
+  
   <div class="about-hero">
     <div class="about-avatar">HA</div>
     <div>
@@ -390,13 +408,14 @@
       <div class="about-role">Computer Science Student · Full-Stack Developer · AI &amp; ML Enthusiast</div>
       <div class="about-tagline">I build AI-powered systems, web applications, and mobile apps that solve real-world problems.</div>
       <div class="about-links">
-        <a class="about-link primary" href="https://github.com/HassaneAitAhmed" target="_blank">⟶ View Projects</a>
-        <a class="about-link secondary" href="mailto:hassaneaitahmedlamara@gmail.com">✉ Contact</a>
-        <a class="about-link secondary" href="https://www.linkedin.com/in/hassane-ait-ahmed-lamara/" target="_blank">in LinkedIn</a>
+        <a class="about-link primary" href="https://github.com" target="_blank">⟶ View Projects</a>
+        <a class="about-link secondary" href="mailto:hassane@example.com">✉ Contact</a>
+        <a class="about-link secondary" href="https://linkedin.com" target="_blank">in LinkedIn</a>
       </div>
     </div>
   </div>
 
+  
   <div class="about-grid">
     <div class="about-card">
       <div class="about-card-title">Who I Am</div>
@@ -424,6 +443,7 @@
     </div>
   </div>
 
+  
   <div class="about-stack-section">
     <div class="about-stack-title">Tech Stack</div>
     <div class="about-stack-sub">Technologies I Work With</div>
@@ -486,13 +506,13 @@
   </div>
 
   <div class="about-footer">
-    Built by Hassane Ait Ahmed Lamara · <a href="https://github.com/HassaneAitAhmed" target="_blank">GitHub</a> · <a href="https://www.linkedin.com/in/hassane-ait-ahmed-lamara/" target="_blank">LinkedIn</a>
+    Built with ♥ by Hassane Ait Ahmed Lamara · <a href="https://github.com" target="_blank">GitHub</a> · <a href="https://linkedin.com" target="_blank">LinkedIn</a>
   </div>
-
 
 </div>
     </div>
 
+    
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-title" id="modalTitle">New Habit</div>
@@ -525,6 +545,19 @@
     </div>
     <label>Weekly Goal (days/week)</label>
     <input type="number" id="habitWeekGoal" value="5" min="1" max="7" style="width:70px;">
+    <label>Completion Type</label>
+    <select id="habitCompletionType" onchange="toggleCompletionFields()">
+      <option value="check">Checkbox (done / not done)</option>
+      <option value="count">Count (e.g. pages, glasses)</option>
+      <option value="duration">Duration (e.g. minutes)</option>
+    </select>
+    <div id="completionTargetRow" style="display:none;margin-top:8px;">
+      <label>Target</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <input type="number" id="habitCompletionTarget" value="1" min="1" style="width:80px;">
+        <input type="text"   id="habitCompletionUnit"   placeholder="unit (pages, min, glasses…)" style="flex:1;">
+      </div>
+    </div>
     <div class="modal-btns">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
       <button class="btn-save" id="modalSaveBtn" onclick="saveHabit()">Add Habit</button>
@@ -545,7 +578,7 @@
   </div>
 </div>
 
-
+  
   <div id="achievementToast">
     <div class="ach-icon">🏆</div>
     <div>
@@ -555,6 +588,7 @@
     </div>
   </div>
 
+  
   <div id="shareCardOverlay">
     <div class="share-card-modal">
       <div class="share-card-title">Share Your Month</div>
@@ -567,6 +601,7 @@
     </div>
   </div>
 
+  
   <div id="onboardingOverlay">
     <div class="ob-card">
       <div class="ob-dots">
@@ -575,6 +610,7 @@
         <div class="ob-dot"></div>
       </div>
 
+      
       <div class="ob-step active">
         <div class="ob-title">Welcome to your Habit Tracker 👋</div>
         <div class="ob-sub">Build consistency, track progress, and become the person you want to be. Let's set up your first habits in 2 minutes.</div>
@@ -583,6 +619,7 @@
         </div>
       </div>
 
+      
       <div class="ob-step">
         <div class="ob-title">Pick your habits</div>
         <div class="ob-sub">Choose habits to start with. You can always add or remove later.</div>
@@ -593,6 +630,7 @@
         </div>
       </div>
 
+      
       <div class="ob-step">
         <div class="ob-title">Set your wake time</div>
         <div class="ob-sub">When do you start your day? We'll use this for your reminder notification.</div>
@@ -608,6 +646,7 @@
     </div>
   </div>
 
+  
   <div id="accountabilityModal">
     <div class="acct-card">
       <div class="acct-title">Accountability Partner</div>
@@ -624,6 +663,94 @@
     </div>
   </div>
 
+  
+  <div class="modal-overlay" id="pomodoroOverlay">
+    <div class="modal" style="max-width:340px;text-align:center;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="modal-title" style="margin-bottom:0">Pomodoro</div>
+        <button onclick="closePomodoro()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3)">✕</button>
+      </div>
+      <div id="pomodoroContent"></div>
+    </div>
+  </div>
+
+  
+  <div class="modal-overlay" id="templatesOverlay">
+    <div class="modal" style="max-width:460px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="modal-title" style="margin-bottom:0">Habit Templates</div>
+        <button onclick="closeTemplates()" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3)">✕</button>
+      </div>
+      <div id="templatesList"></div>
+      <div id="templatePreview" style="display:none;"></div>
+    </div>
+  </div>
+
+  </div>
+
+  
+  <div class="modal-overlay" id="dialogOverlay">
+    <div class="modal" style="max-width:360px;text-align:center;">
+      <div class="modal-title" style="font-size:16px;margin-bottom:12px;" id="dialogMessage">Are you sure?</div>
+      <div class="modal-btns">
+        <button class="dialog-btn" id="dialogCancel">Cancel</button>
+        <button class="dialog-btn danger" id="dialogOk">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="mobileApp" style="display:none;">
+
+    <div class="mob-drawer-overlay" id="mobDrawerOverlay" onclick="closeMobDrawer()"></div>
+    <div class="mob-drawer" id="mobDrawer">
+      <div class="mob-drawer-header">
+        <div class="mob-drawer-title">DISCIPLINE<span style="opacity:.4">.</span></div>
+        <button class="mob-drawer-close" onclick="closeMobDrawer()">✕</button>
+      </div>
+      <div class="mob-drawer-user" id="mobDrawerUser"></div>
+      <div class="mob-drawer-links">
+        <div class="mob-drawer-link" onclick="switchMobileTab('today')">✓ Today</div>
+        <div class="mob-drawer-link" onclick="switchMobileTab('history')">📅 History</div>
+        <div class="mob-drawer-link" onclick="switchMobileTab('stats')">📊 Stats</div>
+        <div class="mob-drawer-link" onclick="switchMobileTab('journal')">📓 Journal</div>
+        <div class="mob-drawer-link" onclick="switchMobileTab('heatmap')">🗓 Year View</div>
+        <div class="mob-drawer-link" onclick="switchMobileTab('about')">👤 About</div>
+        <div class="mob-drawer-link" onclick="switchMobileTab('settings')">⚙ Settings</div>
+        <div class="mob-drawer-divider"></div>
+        <div class="mob-drawer-link" onclick="openMobShareCard();closeMobDrawer()">✦ Share Month Card</div>
+        <div class="mob-drawer-link" onclick="openMobTemplates()">📋 Templates</div>
+        <div class="mob-drawer-link" onclick="openMobAccountability();closeMobDrawer()">👁 Accountability</div>
+      </div>
+    </div>
+
+    <div class="mob-topbar">
+      <button class="mob-topbar-btn" onclick="openMobDrawer()">☰</button>
+      <div class="mob-topbar-title" id="mobTopbarTitle">Today</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="mob-topbar-btn" id="mobThemeBtn" onclick="cycleTheme()">🌙</button>
+        <div class="mob-topbar-avatar" id="mobAvatar" onclick="signOut()">?</div>
+      </div>
+    </div>
+
+    <div class="mob-content">
+      <div class="mob-page" id="mob-today"></div>
+      <div class="mob-page" id="mob-history"  style="display:none;"></div>
+      <div class="mob-page" id="mob-stats"    style="display:none;"></div>
+      <div class="mob-page" id="mob-journal"  style="display:none;"></div>
+      <div class="mob-page" id="mob-heatmap"  style="display:none;"></div>
+      <div class="mob-page" id="mob-about"    style="display:none;"></div>
+      <div class="mob-page" id="mob-settings" style="display:none;"></div>
+    </div>
+
+    <nav class="mob-nav" id="mobileNav"></nav>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="mobSidebarOverlay" onclick="closeMobSidebar()"></div>
+    <!-- Mobile Sidebar -->
+    <div id="mobSidebar">
+      <div id="mobSidebarContent"></div>
+    </div>
   </div>
 
   <div class="sync-indicator" id="syncIndicator">
@@ -642,6 +769,13 @@
   <script src="js/journal.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/auth.js"></script>
+  <script src="js/templates.js"></script>
+  <script src="js/pomodoro.js"></script>
+  <script src="js/streakfreeze.js"></script>
+  <script src="js/dragorder.js"></script>
+  <script src="js/dialog.js"></script>
+  <script src="js/mob_features.js"></script>
+  <script src="js/mobile.js"></script>
   <script src="js/animations.js"></script>
   <script src="js/achievements.js"></script>
   <script src="js/heatmap.js"></script>

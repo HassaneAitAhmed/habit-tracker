@@ -1,4 +1,3 @@
-
 const MONTHS = [
   'January','February','March','April','May','June',
   'July','August','September','October','November','December'
@@ -53,5 +52,5 @@ let habits     = [];
 let categories = [];
 let checks     = {};   
 let moods      = {};   
-let notes      = {};  
+let notes      = {};   
 let settings   = { dark: false, theme: 'light', reminder: false, reminderTime: '20:00' };

@@ -1,4 +1,3 @@
-
 function openShareCard() {
   const overlay = document.getElementById('shareCardOverlay');
   if (!overlay) return;
@@ -17,6 +16,7 @@ function renderShareCardPreview() {
   const W = 540, H = 720;
   canvas.width = W; canvas.height = H;
 
+  
   const days = getDays(viewYear, viewMonth);
   let goal = 0, done = 0, bestStreak = 0, curStreak = 0;
   habits.forEach(h => {
@@ -33,6 +33,7 @@ function renderShareCardPreview() {
   const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const monthName = MONTHS[viewMonth] + ' ' + viewYear;
 
+  
   const style = getComputedStyle(document.body);
   const bg     = style.getPropertyValue('--bg').trim() || '#F5F2EC';
   const card   = style.getPropertyValue('--card').trim() || '#FDFBF7';
@@ -42,12 +43,15 @@ function renderShareCardPreview() {
   const ink3   = style.getPropertyValue('--ink3').trim() || '#A09890';
   const border = style.getPropertyValue('--border').trim() || '#D8D2C4';
 
+  
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
+  
   ctx.fillStyle = accent;
   ctx.fillRect(0, 0, W, 6);
 
+  
   ctx.fillStyle = ink;
   ctx.font = 'bold 13px "DM Mono", monospace';
   ctx.letterSpacing = '2px';
@@ -56,6 +60,7 @@ function renderShareCardPreview() {
   ctx.font = '12px "DM Mono", monospace';
   ctx.fillText(monthName.toUpperCase(), 40, 66);
 
+  
   ctx.fillStyle = accent;
   ctx.font = 'bold 96px "DM Serif Display", serif';
   ctx.fillText(pct + '%', 40, 175);
@@ -64,6 +69,7 @@ function renderShareCardPreview() {
   ctx.font = '13px "DM Mono", monospace';
   ctx.fillText('consistency rate', 40, 198);
 
+  
   const statY = 240;
   [ [done.toString(), 'habits done'], [bestStreak + 'd', 'best streak'], [habits.length.toString(), 'habits tracked'] ]
   .forEach(([val, label], i) => {
@@ -76,10 +82,12 @@ function renderShareCardPreview() {
     ctx.fillText(label, x, statY + 18);
   });
 
+  
   ctx.strokeStyle = border;
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(40, 275); ctx.lineTo(W-40, 275); ctx.stroke();
 
+  
   const cellSize = 14, gap = 3;
   const cols = Math.ceil(days / 7);
   const startX = 40, startY = 295;
@@ -103,6 +111,7 @@ function renderShareCardPreview() {
     ctx.fill();
   }
 
+  
   const listY = startY + 7*(cellSize+gap) + 24;
   ctx.fillStyle = ink3;
   ctx.font = '10px "DM Mono", monospace';
@@ -116,10 +125,13 @@ function renderShareCardPreview() {
 
   ranked.forEach((r, i) => {
     const y = listY + 20 + i * 38;
+    
     ctx.fillStyle = border;
     roundRect(ctx, 40, y, W-80, 24, 4); ctx.fill();
+    
     ctx.fillStyle = r.h.color || accent;
     roundRect(ctx, 40, y, Math.max(8,(W-80)*r.pct/100), 24, 4); ctx.fill();
+    
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 11px "Syne", sans-serif';
     ctx.fillText(r.h.emoji + ' ' + r.h.name, 52, y+15);
@@ -129,6 +141,7 @@ function renderShareCardPreview() {
     ctx.textAlign = 'left';
   });
 
+  
   ctx.fillStyle = ink3;
   ctx.font = '11px "DM Mono", monospace';
   ctx.textAlign = 'center';

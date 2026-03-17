@@ -1,4 +1,3 @@
-
 function renderJournal() {
   const jLabel = document.getElementById('jMonthLabel');
   if (!jLabel) return;

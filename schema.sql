@@ -1,3 +1,11 @@
+-- ============================================================
+--  HABIT TRACKER — Supabase PostgreSQL Schema (fixed)
+--  Run this in your Supabase SQL Editor (supabase.com/dashboard)
+--  Safe to re-run: uses IF NOT EXISTS and DROP … IF EXISTS
+-- ============================================================
+
+
+-- ── PROFILES ────────────────────────────────────────────────
 create table if not exists profiles (
   id         uuid primary key references auth.users(id) on delete cascade,
   email      text,
@@ -6,6 +14,7 @@ create table if not exists profiles (
 
 alter table profiles enable row level security;
 
+-- Drop policies before recreating (safe to re-run)
 drop policy if exists "Users can view own profile"   on profiles;
 drop policy if exists "Users can insert own profile" on profiles;
 drop policy if exists "Users can update own profile" on profiles;
@@ -13,12 +22,14 @@ drop policy if exists "Users can update own profile" on profiles;
 create policy "Users can view own profile"
   on profiles for select using (auth.uid() = id);
 
+-- Required so the trigger (security definer) can insert
 create policy "Users can insert own profile"
   on profiles for insert with check (true);
 
 create policy "Users can update own profile"
   on profiles for update using (auth.uid() = id);
 
+-- ── Auto-create profile on signup (fixed trigger) ───────────
 create or replace function handle_new_user()
 returns trigger
 language plpgsql
@@ -29,19 +40,22 @@ begin
   insert into public.profiles (id, email)
   values (
     new.id,
+    -- email may be null for some auth providers; coalesce to empty string
     coalesce(new.email, '')
   )
-  on conflict (id) do nothing;   
+  on conflict (id) do nothing;   -- never fail if row already exists
   return new;
 end;
 $$;
 
+-- Recreate the trigger cleanly
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function handle_new_user();
 
 
+-- ── CATEGORIES ──────────────────────────────────────────────
 create table if not exists categories (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid references auth.users(id) on delete cascade not null,
@@ -57,7 +71,7 @@ create policy "Users manage own categories"
   on categories for all using (auth.uid() = user_id);
 
 
-
+-- ── HABITS ──────────────────────────────────────────────────
 create table if not exists habits (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid references auth.users(id) on delete cascade not null,
@@ -81,6 +95,7 @@ create policy "Users manage own habits"
   on habits for all using (auth.uid() = user_id);
 
 
+-- ── HABIT CHECKS ────────────────────────────────────────────
 create table if not exists habit_checks (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid references auth.users(id) on delete cascade not null,
@@ -100,6 +115,7 @@ create index if not exists idx_checks_user_month
   on habit_checks (user_id, checked_on);
 
 
+-- ── MOOD LOGS ───────────────────────────────────────────────
 create table if not exists mood_logs (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid references auth.users(id) on delete cascade not null,
@@ -117,6 +133,7 @@ create policy "Users manage own mood logs"
   on mood_logs for all using (auth.uid() = user_id);
 
 
+-- ── JOURNAL NOTES ───────────────────────────────────────────
 create table if not exists journal_notes (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid references auth.users(id) on delete cascade not null,
@@ -134,6 +151,7 @@ create policy "Users manage own journal notes"
   on journal_notes for all using (auth.uid() = user_id);
 
 
+-- ── HABIT NOTES ─────────────────────────────────────────────
 create table if not exists habit_notes (
   id       uuid primary key default gen_random_uuid(),
   user_id  uuid references auth.users(id) on delete cascade not null,
@@ -152,6 +170,7 @@ create policy "Users manage own habit notes"
   on habit_notes for all using (auth.uid() = user_id);
 
 
+-- ── USER SETTINGS ────────────────────────────────────────────
 create table if not exists user_settings (
   user_id       uuid primary key references auth.users(id) on delete cascade,
   dark_mode     boolean default false,
@@ -165,124 +184,3 @@ alter table user_settings enable row level security;
 drop policy if exists "Users manage own settings" on user_settings;
 create policy "Users manage own settings"
   on user_settings for all using (auth.uid() = user_id);
-
-
-create index if not exists idx_habits_user       on public.habits (user_id);
-create index if not exists idx_categories_user   on public.categories (user_id);
-create index if not exists idx_checks_user_date  on public.habit_checks (user_id, checked_on);
-create index if not exists idx_mood_user_date    on public.mood_logs (user_id, log_date);
-create index if not exists idx_journal_user_date on public.journal_notes (user_id, note_date);
-create index if not exists idx_hnotes_user       on public.habit_notes (user_id);
-create index if not exists idx_settings_user     on public.user_settings (user_id);
-
-
-drop policy if exists "Users manage own habits" on public.habits;
-create policy "Users manage own habits" on public.habits
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-
-drop policy if exists "Users manage own categories" on public.categories;
-create policy "Users manage own categories" on public.categories
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-drop policy if exists "Users manage own checks" on public.habit_checks;
-create policy "Users manage own checks" on public.habit_checks
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-drop policy if exists "Users manage own mood logs" on public.mood_logs;
-create policy "Users manage own mood logs" on public.mood_logs
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-drop policy if exists "Users manage own journal notes" on public.journal_notes;
-create policy "Users manage own journal notes" on public.journal_notes
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-drop policy if exists "Users manage own habit notes" on public.habit_notes;
-create policy "Users manage own habit notes" on public.habit_notes
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-drop policy if exists "Users manage own settings" on public.user_settings;
-create policy "Users manage own settings" on public.user_settings
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-
-
-drop trigger if exists on_auth_user_created on auth.users;
-drop function if exists handle_new_user();
-
-create or replace function handle_new_user()
-returns trigger
-language plpgsql
-security definer
-set search_path = public
-as $$
-begin
-  insert into public.profiles (id, email)
-  values (new.id, new.email)
-  on conflict (id) do nothing;
-  
-  insert into public.user_settings (user_id)
-  values (new.id)
-  on conflict (user_id) do nothing;
-
-  return new;
-exception
-  when others then
-    return new;
-end;
-$$;
-
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute function handle_new_user();
-
-create table if not exists public.profiles (
-  id         uuid primary key references auth.users(id) on delete cascade,
-  email      text,
-  created_at timestamptz default now()
-);
-
-create table if not exists public.user_settings (
-  user_id        uuid primary key references auth.users(id) on delete cascade,
-  dark_mode      boolean default false,
-  reminder_on    boolean default false,
-  reminder_time  text default '20:00',
-  updated_at     timestamptz default now()
-);
-
-alter table public.profiles enable row level security;
-alter table public.user_settings enable row level security;
-
-drop policy if exists "Users can view own profile" on public.profiles;
-drop policy if exists "Users can update own profile" on public.profiles;
-drop policy if exists "Users can insert own profile" on public.profiles;
-drop policy if exists "Users manage own settings" on public.user_settings;
-
-create policy "Users can view own profile"
-  on public.profiles for select
-  using (auth.uid() = id);
-
-create policy "Users can update own profile"
-  on public.profiles for update
-  using (auth.uid() = id);
-
-create policy "Users can insert own profile"
-  on public.profiles for insert
-  with check (auth.uid() = id);
-
-create policy "Users manage own settings"
-  on public.user_settings for all
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);
-
-grant usage on schema public to postgres, anon, authenticated, service_role;
-grant all on public.profiles to postgres, anon, authenticated, service_role;
-grant all on public.user_settings to postgres, anon, authenticated, service_role;
-
-
-grant usage on schema public to authenticated;
-grant select, insert, update, delete on all tables in schema public to authenticated;
-
-
-
-alter table public.user_settings
-  add column if not exists theme text default 'light';

@@ -1,11 +1,12 @@
-
 function exportCSV() {
   const days = getDays(viewYear, viewMonth);
 
+  
   let csv = `Habit,Category,Frequency,`;
   for (let d = 1; d <= days; d++) csv += `Day ${d},`;
   csv += `Total,Completion%\n`;
 
+  
   habits.forEach(h => {
     const cat = getCat(h.category_id);
     csv += `"${h.name}","${cat ? cat.name : ''}","${h.freq || 'daily'}",`;
@@ -25,6 +26,7 @@ function exportCSV() {
     csv += `${done},${pct}%\n`;
   });
 
+  
   const blob = new Blob([csv], { type: 'text/csv' });
   const a    = document.createElement('a');
   a.href     = URL.createObjectURL(blob);
@@ -59,6 +61,7 @@ function exportPDF() {
       return a;
     }, 0);
 
+    
     let app2 = 0;
     for (let d = 1; d <= days; d++) if (isApplicable(h, viewYear, viewMonth, d)) app2++;
     const pct = app2 > 0 ? Math.round((done / app2) * 100) : 0;
@@ -70,6 +73,7 @@ function exportPDF() {
     </tr>`;
   });
 
+  
   let dayHeaders = '';
   for (let d = 1; d <= days; d++) dayHeaders += `<th>${d}</th>`;
 

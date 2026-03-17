@@ -177,6 +177,31 @@ You should see: `Success. No rows returned.`
 3. Copy your **anon public** key (the long JWT string — not the service role key)
 
 ---
+
+### Local Development
+
+**Step 1 — Configure credentials**
+
+Open `js/supabase.js` and replace the placeholder values:
+
+```js
+const SUPABASE_URL      = 'https://your-project-id.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+```
+
+**Step 2 — Serve the project**
+
+```bash
+cd habit-tracker
+npx serve .
+```
+
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
+
+**Step 3 — Create an account**
+
+Use the Sign Up form in the app. Your account is created in Supabase Auth and a profile row is inserted automatically via a database trigger.
+
 ---
 
 ## Database Schema
@@ -193,6 +218,16 @@ You should see: `Success. No rows returned.`
 | `user_settings` | Dark mode flag, theme name, reminder toggle, reminder time. One row per user. |
 
 All tables have **Row Level Security (RLS)** enabled. Every policy ensures users can only read, insert, update, or delete their own rows.
+
+### Existing Database Migration
+
+If you ran `schema.sql` before the theme feature was added, run the migration:
+
+```sql
+-- add_theme_column.sql
+ALTER TABLE public.user_settings
+  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light';
+```
 
 ---
 
@@ -284,3 +319,6 @@ Generates a URL appending `?view=<token>` where the token is a base64-encoded ve
 
 **Hassane Ait Ahmed Lamara**  
 Computer Science Student · Full-Stack Developer · AI & ML Enthusiast
+
+- GitHub: [github.com/hassane](https://github.com)
+- LinkedIn: [linkedin.com/in/hassane](https://linkedin.com)

@@ -1,4 +1,3 @@
-
 const ACHIEVEMENTS = [
   { id:'first_check',   icon:'✅', title:'First Step',        desc:'Checked your first habit',           check: (s) => s.totalChecks >= 1 },
   { id:'day_perfect',   icon:'⭐', title:'Perfect Day',        desc:'100% completion in a single day',    check: (s) => s.hadPerfectDay },
@@ -31,6 +30,7 @@ function computeAchievementStats() {
         habitCounts[key] = (habitCounts[key] || 0) + 1;
         hStreak++;
         hMaxStreak = Math.max(hMaxStreak, hStreak);
+        
         const parts = key.split(' ');
         parts.forEach(p => { if (p.length > 3) habitCounts[p] = (habitCounts[p] || 0) + 1; });
       } else if (isApplicable(h, viewYear, viewMonth, d)) {
@@ -40,6 +40,7 @@ function computeAchievementStats() {
     maxStreak = Math.max(maxStreak, hMaxStreak);
   });
 
+  
   let curAllStreak = 0;
   for (let d = 1; d <= todayD; d++) {
     let app = 0, done = 0;
@@ -87,6 +88,7 @@ function renderAchievements() {
   });
   el.innerHTML = html || '<div class="empty-mini">Keep going to earn badges!</div>';
 
+  
   const prevKey = 'ach_shown_' + viewYear + '_' + viewMonth;
   const prevShown = JSON.parse(localStorage.getItem(prevKey) || '[]');
   unlocked.forEach(a => {
