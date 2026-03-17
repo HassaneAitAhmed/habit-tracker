@@ -96,12 +96,12 @@ function exportCSV() {
   showToast('CSV exported!');
 }
 
-const THEME_ICONS  = { light: '🌙', dark: '🌸', pink: '☀️' };
+const THEME_ICONS  = { light: '☀️', dark: '🌙', pink: '🌸' };
 const THEME_TITLES = { light: 'Switch to Dark mode', dark: 'Switch to Pink mode', pink: 'Switch to Light mode' };
 
 function applyTheme() {
   const mobBtn = document.getElementById('mobThemeBtn');
-  const icons = { light: '🌙', dark: '🌸', pink: '☀️' };
+  const icons = { light: '☀️', dark: '🌙', pink: '🌸' };
   if (mobBtn) mobBtn.textContent = icons[settings.theme||'light'] || '🌙';
   const theme = settings.theme || 'light';
 

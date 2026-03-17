@@ -66,29 +66,50 @@ function getUnlockedAchievements() {
 
 function renderAchievements() {
   const unlocked = getUnlockedAchievements();
-  const locked = ACHIEVEMENTS.filter(a => !unlocked.find(u => u.id === a.id));
-  const el = document.getElementById('achievementsList');
-  if (!el) return;
+  const locked   = ACHIEVEMENTS.filter(a => !unlocked.find(u => u.id === a.id));
+
   if (!habits.length) {
-    el.innerHTML = `<div class="empty-mini">Start tracking to earn badges</div>`;
+    const empty = '<div class="empty-mini">Start tracking to earn badges</div>';
+    const e1 = document.getElementById('achievementsList');
+    const e2 = document.getElementById('achievementsListYearView');
+    if (e1) e1.innerHTML = empty;
+    if (e2) e2.innerHTML = empty;
     return;
   }
-  let html = '';
+
+  let unlockedHtml = '';
   unlocked.forEach(a => {
-    html += `<div class="badge-item unlocked" title="${a.desc}">
+    unlockedHtml += `<div class="badge-item unlocked" title="${a.desc}">
       <div class="badge-icon">${a.icon}</div>
       <div class="badge-name">${a.title}</div>
     </div>`;
   });
+
+  let lockedHtml = '';
   locked.slice(0, 4).forEach(a => {
-    html += `<div class="badge-item locked" title="${a.desc}">
+    lockedHtml += `<div class="badge-item locked" title="${a.desc}">
       <div class="badge-icon">🔒</div>
       <div class="badge-name">${a.title}</div>
     </div>`;
   });
-  el.innerHTML = html || '<div class="empty-mini">Keep going to earn badges!</div>';
 
-  
+  const html = unlockedHtml + lockedHtml || '<div class="empty-mini">Keep going to earn badges!</div>';
+
+  const e1 = document.getElementById('achievementsList');
+  const e2 = document.getElementById('achievementsListYearView');
+  if (e1) e1.innerHTML = html;
+  if (e2) e2.innerHTML = html;
+
+  const badge = document.getElementById('achCountBadge');
+  if (badge) {
+    if (unlocked.length > 0) {
+      badge.textContent = unlocked.length;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
   const prevKey = 'ach_shown_' + viewYear + '_' + viewMonth;
   const prevShown = JSON.parse(localStorage.getItem(prevKey) || '[]');
   unlocked.forEach(a => {

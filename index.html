@@ -383,17 +383,7 @@
           <div id="heatmapSummary"></div>
         </div>
 
-        <div class="chart-row">
-          <div class="chart-card">
-            <div class="chart-title">Best Day of the Week</div>
-            <div class="bd-chart" id="bestDayChart"></div>
-            <div id="bestDayMsg"></div>
-          </div>
-          <div class="side-card" style="border-radius:var(--radius);border:1px solid var(--border);">
-            <div class="side-card-title">Achievements</div>
-            <div class="badge-grid" id="achievementsList"></div>
-          </div>
-        </div>
+        <div class="chart-card" id="bestDayChart"></div>
       </div>
     </div>
 
@@ -402,15 +392,15 @@
 
   
   <div class="about-hero">
-    <div class="about-avatar">HA</div>
+    <img class="about-avatar-img"  src="https://i.ibb.co/QF9GQdtg/profile.png" alt="Hassane Ait Ahmed Lamara">
     <div>
       <div class="about-name">Hassane Ait Ahmed Lamara</div>
       <div class="about-role">Computer Science Student · Full-Stack Developer · AI &amp; ML Enthusiast</div>
       <div class="about-tagline">I build AI-powered systems, web applications, and mobile apps that solve real-world problems.</div>
       <div class="about-links">
-        <a class="about-link primary" href="https://github.com" target="_blank">⟶ View Projects</a>
-        <a class="about-link secondary" href="mailto:hassane@example.com">✉ Contact</a>
-        <a class="about-link secondary" href="https://linkedin.com" target="_blank">in LinkedIn</a>
+        <a class="about-link primary" href="https://github.com/HassaneAitAhmed" target="_blank">⟶ View Projects</a>
+        <a class="about-link secondary" hassaneaitahmedlamara@gmail.com>✉ Contact</a>
+        <a class="about-link secondary" href="https://www.linkedin.com/in/hassane-ait-ahmed-lamara/" target="_blank">in LinkedIn</a>
       </div>
     </div>
   </div>
@@ -506,7 +496,7 @@
   </div>
 
   <div class="about-footer">
-    Built with ♥ by Hassane Ait Ahmed Lamara · <a href="https://github.com" target="_blank">GitHub</a> · <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+    Built by Hassane Ait Ahmed Lamara <a href="https://github.com/HassaneAitAhmed" target="_blank">GitHub</a> · <a href="https://www.linkedin.com/in/hassane-ait-ahmed-lamara/" target="_blank">LinkedIn</a>
   </div>
 
 </div>
@@ -589,14 +579,18 @@
   </div>
 
   
-  <div id="shareCardOverlay">
+  <div id="shareCardOverlay" onclick="if(event.target===this)closeShareCard()">
     <div class="share-card-modal">
-      <div class="share-card-title">Share Your Month</div>
-      <div class="share-card-sub">Download a beautiful card of your monthly progress</div>
+      <div class="share-card-header">
+        <div>
+          <div class="share-card-title">Share Your Month</div>
+          <div class="share-card-sub">Download a beautiful card of your monthly progress</div>
+        </div>
+        <button class="share-card-close" onclick="closeShareCard()" title="Close">✕</button>
+      </div>
       <canvas id="shareCanvas"></canvas>
       <div class="share-btns">
         <button class="share-btn primary" onclick="downloadShareCard()">⬇ Download Card</button>
-        <button class="share-btn secondary" onclick="closeShareCard()">Close</button>
       </div>
     </div>
   </div>
@@ -718,9 +712,9 @@
         <div class="mob-drawer-link" onclick="switchMobileTab('about')">👤 About</div>
         <div class="mob-drawer-link" onclick="switchMobileTab('settings')">⚙ Settings</div>
         <div class="mob-drawer-divider"></div>
-        <div class="mob-drawer-link" onclick="openShareCard()">✦ Share Month Card</div>
+        <div class="mob-drawer-link" onclick="openMobShareCard();closeMobDrawer()">✦ Share Month Card</div>
         <div class="mob-drawer-link" onclick="openMobTemplates()">📋 Templates</div>
-        <div class="mob-drawer-link" onclick="openAccountability()">👁 Accountability</div>
+        <div class="mob-drawer-link" onclick="openMobAccountability();closeMobDrawer()">👁 Accountability</div>
       </div>
     </div>
 
@@ -774,6 +768,7 @@
   <script src="js/streakfreeze.js"></script>
   <script src="js/dragorder.js"></script>
   <script src="js/dialog.js"></script>
+  <script src="js/mob_features.js"></script>
   <script src="js/mobile.js"></script>
   <script src="js/animations.js"></script>
   <script src="js/achievements.js"></script>

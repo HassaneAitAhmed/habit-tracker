@@ -1,4 +1,7 @@
 async function toggleCheck(habitId, day) {
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const targetDate    = new Date(viewYear, viewMonth, day);
+  if (targetDate < todayMidnight) return;
   const dateStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
   const key = `${habitId}__${dateStr}`;
   setSyncState('saving');

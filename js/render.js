@@ -78,9 +78,15 @@ function renderTable() {
       if (na) {
         bd += `<div class="check-box na"></div>`;
       } else {
-        bd += `<div class="check-box ${checked ? 'checked' : ''}"
-          onclick="toggleCheck('${h.id}',${d})"
-          style="${checked ? `background:${h.color}22;border-color:${h.color};` : ''}"></div>`;
+        const isPast = new Date(viewYear, viewMonth, d) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        if (isPast) {
+          bd += `<div class="check-box ${checked ? 'checked past' : 'past'}"
+            style="${checked ? `background:${h.color}22;border-color:${h.color};` : ''}opacity:0.45;cursor:default;" title="Past day"></div>`;
+        } else {
+          bd += `<div class="check-box ${checked ? 'checked' : ''}"
+            onclick="toggleCheck('${h.id}',${d})"
+            style="${checked ? `background:${h.color}22;border-color:${h.color};` : ''}"></div>`;
+        }
       }
       bd += `</td>`;
     }

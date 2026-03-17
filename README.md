@@ -1,75 +1,48 @@
-# Habit Tracker
+# DISCIPLINE. — Habit Tracker
 
-A full-stack habit tracking web application built with vanilla JavaScript and Supabase. Designed for users who take consistency seriously — supports daily check-ins, mood logging, journaling, progress analytics, and team accountability.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-  - [Prerequisites](#prerequisites)
-  - [Supabase Setup](#supabase-setup)
-  - [Local Development](#local-development)
-- [Database Schema](#database-schema)
-- [Configuration](#configuration)
-- [Feature Reference](#feature-reference)
-- [Theming](#theming)
-- [Security](#security)
-- [Known Limitations](#known-limitations)
-- [Author](#author)
-
----
-
-## Overview
-
-Habit Tracker is a single-page application that stores all data in a Supabase (PostgreSQL) backend with full user authentication. It requires no build tool, no framework, and no package manager — open `index.html` through any static file server and it runs.
-
-The application is structured as a modular JavaScript codebase split across focused files, with a single CSS file and HTML page templates kept separate from logic.
+A full-stack habit tracking web application built with vanilla JavaScript and Supabase. Track daily habits, log your mood, write journal entries, and analyze your consistency over time — all in a clean, fast, no-framework app.
 
 ---
 
 ## Features
 
-### Core Tracking
-- **Daily habit check-ins** — toggle habits per day on a full monthly grid
-- **Habit frequency modes** — Daily, Weekdays only, Weekends only, or Custom days
-- **Weekly goal targets** — set a per-habit weekly target (e.g. 5 of 7 days) and track how many weeks you hit it
-- **Habit categories** — color-coded groupings with filter support on the dashboard
-- **Per-habit notes** — attach a monthly note to any habit for context or reflection
+**Core Tracking**
+- Daily habit check-ins with a 31-column monthly grid (desktop)
+- Habit frequency: daily, weekdays only, weekends only, or custom days
+- Weekly goal targets per habit
+- Completion types: checkbox, count (e.g. pages), or duration (e.g. minutes)
+- Category system with custom colors
+- Per-habit monthly notes
 
-### Analytics & Insights
-- **Daily and weekly progress bar charts** — rendered inline on the dashboard
-- **Streak tracker** — current streak with a 21-day visual heatmap
-- **Best day of the week** — bar chart showing your average completion rate per weekday
-- **Full-year heatmap** — GitHub-style contribution grid covering the past 365 days with four intensity levels
-- **Analysis panel** — all habits ranked by completion percentage with inline progress bars
-- **Top 10 habits** — sorted leaderboard by consistency rate
+**Analytics**
+- Daily and weekly progress bar charts
+- Monthly consistency percentage with donut chart
+- 21-day streak grid
+- Full-year heatmap (last 12 months)
+- Best day of the week stat card
+- Top 10 habits ranking
+- Analysis panel with per-habit completion bars
 
-### Mood & Journal
-- **Daily mood and motivation logging** — 1–10 scale, logged per day
-- **Daily journal** — free-text entries per day with a recent entries list
-- **Month navigation** — browse any past month in both the tracker and journal
+**Additional Features**
+- Mood and motivation logging (1–10 scale, per day)
+- Daily journal with date navigation and recent entries list
+- Habit templates (5 starter packs: Morning Warrior, Student Focus, Athlete, Mindfulness, Builder)
+- Streak freeze — one shield per habit per month to protect a missed day
+- Pomodoro timer — custom duration (5–60 min), auto-checks habit on completion
+- Share Month Card — downloadable PNG summary card
+- Accountability partner — read-only share link
+- Achievement badges (13 unlockable)
+- Drag-to-reorder habits
+- Export data to CSV
+- 3 themes: Light, Dark, Pink
 
-### Achievements
-- **13 unlockable badges** — including Perfect Day, Week Warrior, Ice Warrior, Iron Consistent, Monthly Champion, and more
-- **Achievement toast notifications** — pop-up when a new badge is unlocked
-- **Per-month tracking** — unlocked state is stored locally per calendar month
-
-### Sharing & Collaboration
-- **Share Month Card** — renders a Canvas-based PNG card of your monthly stats, downloadable and shareable
-- **Accountability Partner** — generates a read-only share URL that disables all interactive elements for the viewer
-
-### UX & Accessibility
-- **Onboarding flow** — 3-step wizard for first-time users: pick starter habits, set wake time
-- **Empty state art** — illustrated empty state instead of a blank table
-- **Micro-animations** — checkbox bounce, confetti burst on check, animated progress bars, streak number count-up
-- **Browser reminders** — configurable daily notification via the Notifications API
-- **CSV export** — full monthly habit data as a downloadable spreadsheet
-- **Three themes** — Light, Dark, and Pink, persisted to both Supabase and localStorage
+**Mobile**
+- Fully separate mobile UI (activates at ≤ 700px)
+- Bottom navigation: Today, History, Stats, Journal, Settings
+- Left slide drawer for all pages: Year View, About, Share Card, Templates, Accountability
+- Native bottom-sheet forms for adding habits, categories, templates, pomodoro
+- Today view: large tap targets, streak badge, 🍅 pomodoro button per habit
+- Past days are locked — cannot be checked on mobile or desktop
 
 ---
 
@@ -77,12 +50,14 @@ The application is structured as a modular JavaScript codebase split across focu
 
 | Layer | Technology |
 |---|---|
-| Frontend | Vanilla JavaScript (ES2020), HTML5, CSS3 |
-| Backend / Database | [Supabase](https://supabase.com) (PostgreSQL + Auth) |
-| Authentication | Supabase Auth — email/password |
+| Frontend | Vanilla JavaScript (ES6+), HTML5, CSS3 |
+| Backend | Supabase (PostgreSQL + Auth) |
+| Auth | Supabase Auth — email/password |
+| Database | PostgreSQL via Supabase |
 | Fonts | DM Serif Display, DM Mono, Syne (Google Fonts) |
-| Canvas rendering | HTML5 Canvas API (share card) |
-| No build step | Served as static files |
+| Hosting | Any static file server |
+
+No build tool, no framework, no dependencies beyond the Supabase JS client.
 
 ---
 
@@ -90,235 +65,169 @@ The application is structured as a modular JavaScript codebase split across focu
 
 ```
 habit-tracker/
-│
-├── index.html                  # Entry point — all pages inlined, scripts loaded at bottom
-│
+├── index.html              — Single HTML file, all pages inlined
 ├── css/
-│   └── style.css               # All styles: base, themes (light/dark/pink), components, features
-│
-├── pages/                      # HTML fragments (source of truth — inlined into index.html)
-│   ├── auth.html               # Login and signup forms
-│   ├── chrome.html             # Quote banner, header, navigation tabs
-│   ├── dashboard.html          # Stats, charts, habits table, mood tracker, sidebar
-│   ├── journal.html            # Day picker, editor, recent entries
-│   ├── settings.html           # Appearance, reminders, categories, account
-│   ├── modals.html             # Habit modal, note modal
-│   └── about.html              # Creator profile and tech stack
-│
+│   └── style.css           — All styles, themes, responsive, mobile
 ├── js/
-│   ├── supabase.js             # Supabase client initialisation — put credentials here
-│   ├── state.js                # Global state, constants (MONTHS, QUOTES, EMOJIS, COLORS)
-│   ├── utils.js                # Shared utilities: getDays, isChecked, showToast, theme system
-│   ├── db.js                   # loadAll(), saveSettingsDB(), saveMoodDB(), deleteAllData()
-│   ├── render.js               # renderAll(), renderTable(), renderStats(), renderCharts(), renderMood(), renderSidebar()
-│   ├── habits.js               # toggleCheck(), openModal(), saveHabit(), deleteHabit(), note modal
-│   ├── categories.js           # addCategory(), updateCatColor(), updateCatName(), deleteCategory()
-│   ├── journal.js              # renderJournal(), saveJournalNote(), jPrev(), jNext()
-│   ├── settings.js             # renderSettings(), toggleReminder(), scheduleReminder()
-│   ├── auth.js                 # signIn(), signUp(), signOut(), forceSignOut()
-│   ├── animations.js           # popCheckbox(), burstConfetti(), animateBar(), slideInCard()
-│   ├── achievements.js         # ACHIEVEMENTS config, computeAchievementStats(), renderAchievements()
-│   ├── heatmap.js              # renderHeatmap() — full-year grid
-│   ├── bestday.js              # renderBestDay() — per-weekday average chart
-│   ├── sharecard.js            # openShareCard(), renderShareCardPreview(), downloadShareCard()
-│   ├── onboarding.js           # STARTER_HABITS, showOnboarding(), finishOnboarding()
-│   ├── accountability.js       # openAccountability(), copyShareLink(), checkViewMode()
-│   └── app.js                  # Bootstrap: auth listener, nav wiring, early theme apply
-│
-├── schema.sql                  # Full Supabase PostgreSQL schema — run once in SQL Editor
-└── add_theme_column.sql        # Migration for existing databases — adds theme column
+│   ├── supabase.js         — Supabase client credentials
+│   ├── state.js            — Global state, constants (QUOTES, EMOJIS, COLORS)
+│   ├── app.js              — Auth state machine, app bootstrap
+│   ├── db.js               — loadAll(), saveMoodDB(), deleteAllData()
+│   ├── render.js           — Desktop renderAll(), table, charts, mood, sidebar
+│   ├── mobile.js           — Entire mobile app (all pages, native forms)
+│   ├── habits.js           — toggleCheck(), openModal(), saveHabit(), deleteHabit()
+│   ├── categories.js       — Category CRUD
+│   ├── journal.js          — Journal render and save
+│   ├── settings.js         — Settings page render, drag-to-reorder
+│   ├── utils.js            — Helpers: getDays, isApplicable, isChecked, themes, CSV
+│   ├── auth.js             — signIn(), signUp(), signOut()
+│   ├── templates.js        — 5 habit template packs
+│   ├── pomodoro.js         — Desktop Pomodoro timer
+│   ├── streakfreeze.js     — Streak freeze logic and rendering
+│   ├── dragorder.js        — Drag-to-reorder habits in settings
+│   ├── dialog.js           — Custom HTML confirm dialog (replaces window.confirm)
+│   ├── animations.js       — Checkbox bounce, confetti burst
+│   ├── achievements.js     — 13 badges, stats computation, toast notification
+│   ├── heatmap.js          — Full-year Canvas heatmap renderer
+│   ├── bestday.js          — Best day of the week stat card
+│   ├── sharecard.js        — Month card Canvas renderer and PNG download
+│   ├── onboarding.js       — 3-step first-time setup wizard
+│   ├── accountability.js   — Read-only share link generation
+│   ├── mood.js             — Mood dot render and cycle
+│   ├── ui.js               — Loading overlay, toast, sync indicator
+│   └── export.js           — CSV export
+├── pages/                  — HTML fragments (reference only, not loaded at runtime)
+├── schema.sql              — Full database schema (run this)
+├── dummy_data.sql          — Sample data for testing
+└── README.md
 ```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- A free [Supabase](https://supabase.com) account
-- A static file server (any of the following):
-  ```bash
-  npx serve .
-  # or
-  python3 -m http.server 8080
-  # or
-  npx http-server .
-  ```
-
-> **Why a server?** The app loads JS modules from relative paths. Browsers block these when opening `file://` URLs directly due to CORS restrictions. Any local HTTP server resolves this.
-
----
-
-### Supabase Setup
-
-**Step 1 — Create a project**
-
-Go to [supabase.com](https://supabase.com), create a new project, and wait for it to initialise (~2 minutes).
-
-**Step 2 — Run the schema**
-
-1. In your Supabase dashboard, navigate to **SQL Editor**
-2. Click **New query**
-3. Paste the contents of `schema.sql`
-4. Click **Run**
-
-You should see: `Success. No rows returned.`
-
-**Step 3 — Enable Email Auth**
-
-1. Go to **Authentication → Providers**
-2. Confirm that **Email** is enabled (it is by default)
-3. Optional: go to **Authentication → Settings** and disable "Enable email confirmations" for easier local testing
-
-**Step 4 — Get your API credentials**
-
-1. Go to **Settings → API**
-2. Copy your **Project URL** (e.g. `https://xxxx.supabase.co`)
-3. Copy your **anon public** key (the long JWT string — not the service role key)
-
----
-
-### Local Development
-
-**Step 1 — Configure credentials**
-
-Open `js/supabase.js` and replace the placeholder values:
-
-```js
-const SUPABASE_URL      = 'https://your-project-id.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-```
-
-**Step 2 — Serve the project**
-
-```bash
-cd habit-tracker
-npx serve .
-```
-
-Then open [http://localhost:3000](http://localhost:3000) in your browser.
-
-**Step 3 — Create an account**
-
-Use the Sign Up form in the app. Your account is created in Supabase Auth and a profile row is inserted automatically via a database trigger.
 
 ---
 
 ## Database Schema
 
+### Tables Overview
+
 | Table | Purpose |
 |---|---|
-| `profiles` | Auto-created on signup via trigger. Stores user email. |
-| `categories` | User-defined habit categories with name and hex color. |
-| `habits` | Habit definitions: name, emoji, color, frequency, weekly goal. |
-| `habit_checks` | One row per completed habit per day. Unique on `(habit_id, checked_on)`. |
-| `mood_logs` | Daily mood (1–10) and motivation (1–10) scores. Unique per `(user_id, log_date)`. |
-| `journal_notes` | Free-text daily journal entries. Unique per `(user_id, note_date)`. |
-| `habit_notes` | Per-habit monthly notes. Unique per `(habit_id, year, month)`. |
-| `user_settings` | Dark mode flag, theme name, reminder toggle, reminder time. One row per user. |
+| `profiles` | Auto-created on signup via trigger |
+| `categories` | User-defined habit categories with colors |
+| `habits` | Habit definitions with frequency, emoji, color, completion type |
+| `habit_checks` | One row per habit per day when checked |
+| `mood_logs` | Daily mood (1–10) and motivation (1–10) |
+| `journal_notes` | Daily free-text journal entries |
+| `habit_notes` | Per-habit monthly notes |
+| `user_settings` | Theme, dark mode, reminder preferences |
+| `habit_stacks` | Ordered chains of habits (defined, UI removed) |
+| `streak_freezes` | One freeze token per habit per month |
 
-All tables have **Row Level Security (RLS)** enabled. Every policy ensures users can only read, insert, update, or delete their own rows.
+All tables have Row Level Security (RLS) enabled. Users can only access their own data.
 
-### Existing Database Migration
+---
 
-If you ran `schema.sql` before the theme feature was added, run the migration:
+## Setup
 
-```sql
--- add_theme_column.sql
-ALTER TABLE public.user_settings
-  ADD COLUMN IF NOT EXISTS theme TEXT DEFAULT 'light';
+### 1. Create a Supabase project
+
+Go to [supabase.com](https://supabase.com), create a new project, and note your **Project URL** and **anon/public API key**.
+
+### 2. Run the schema
+
+In your Supabase dashboard, go to **SQL Editor** and run `schema.sql`. This creates all tables, policies, indexes, and the signup trigger in one shot. It is safe to re-run.
+
+### 3. Configure credentials
+
+Open `js/supabase.js` and replace the two values:
+
+```js
+const SUPABASE_URL      = 'https://your-project.supabase.co';
+const SUPABASE_ANON_KEY = 'your-anon-key-here';
 ```
 
+### 4. Serve the app
+
+No build step needed. Serve the folder with any static server:
+
+```bash
+# Option 1 — Node
+npx serve .
+
+# Option 2 — Python
+python3 -m http.server 8080
+
+# Option 3 — VS Code
+# Use the Live Server extension and open index.html
+```
+
+Then open `http://localhost:3000` (or whichever port) in your browser.
+
+### 5. Sign up
+
+Create an account using any email and password. The app will walk you through a 3-step onboarding flow to pick your first habits.
+
 ---
 
-## Configuration
+## Loading Sample Data
 
-All user-facing settings are managed through the **Settings** tab in the app. No manual file editing is required beyond the initial credential setup.
+To populate the app with 3 months of realistic data for testing:
 
-| Setting | Location | Description |
-|---|---|---|
-| Supabase credentials | `js/supabase.js` | Project URL and anon key |
-| Theme | Settings → Appearance | Light / Dark / Pink |
-| Daily reminder | Settings → Reminders | Browser notification at a set time |
-| Categories | Settings → Categories | Add, rename, recolor, delete |
-| Habit management | Settings → Manage Habits | Edit or delete existing habits |
+1. Go to your Supabase dashboard → **Authentication → Users** and copy your user UUID
+2. Open `dummy_data.sql` and replace every occurrence of `<<YOUR_USER_ID>>` with your UUID
+3. Run the file in the SQL Editor
 
 ---
 
-## Feature Reference
+## Themes
 
-### Theme System
+The app ships with three themes switchable via the header button or Settings page:
 
-Three themes are available, cycled via the header button or selected directly in Settings:
+| Theme | Description |
+|---|---|
+| ☀️ Light | Warm sand tones — the default |
+| 🌙 Dark | Deep brown-black with gold accents |
+| 🌸 Pink | Rose and magenta |
 
-| Theme | Body class | Description |
-|---|---|---|
-| Light | *(none)* | Warm sand tones, the default |
-| Dark | `body.dark` | Deep brown-black backgrounds |
-| Pink | `body.pink` | Rose and magenta palette |
+Theme is persisted to `user_settings.theme` in the database and to `localStorage` to prevent flash on reload.
 
-Theme preference is saved to Supabase `user_settings.theme` and also to `localStorage` under the key `ht_theme` to prevent a flash of the wrong theme on page load before the database responds.
+---
 
-### Achievement Badges
+## Key Design Decisions
 
-Achievements are computed client-side from the current month's data each time `renderAchievements()` is called. Unlocked state is stored in `localStorage` under `ach_shown_{year}_{month}` to avoid re-triggering the toast on every render.
+**No framework** — The entire frontend is plain JS modules loaded via `<script>` tags. No webpack, no Vite, no React. This keeps the project instantly understandable, zero-config to deploy, and fast to load.
+
+**Two separate UIs** — Rather than trying to make the desktop table responsive, mobile devices (≤ 700px) get a completely separate layout in `mobile.js` with native bottom-sheet forms, large tap targets, and a drawer navigation. Desktop layout is untouched.
+
+**Past days are locked** — Users can only check habits for today. Past days are displayed as read-only (dimmed, no click handler). This enforces honest tracking.
+
+**Supabase data window** — `loadAll()` fetches checks from the previous month through the next month (~3 months). The heatmap and best-day card work off this window. For a full year of heatmap data, consider widening the date range in `db.js`.
+
+**Custom dialog** — All `window.confirm()` calls are replaced with a custom HTML modal (`dialog.js`) that respects the app's theme and doesn't break on mobile browsers.
+
+---
+
+## Achievement Badges
 
 | Badge | Condition |
 |---|---|
-| First Step | 1 habit checked |
-| Perfect Day | 100% completion on any single day |
-| Week Warrior | 7-day streak on any habit |
-| Diamond Month | 30-day streak on any habit |
-| Two Week King | All habits complete 14 days in a row |
-| Ice Warrior | Cold Shower habit checked 20+ times |
-| Iron Consistent | GYM habit checked 10+ times this month |
-| Knowledge Seeker | Read habit done 15+ times |
-| Early Bird | Wake-up habit 10+ days this month |
-| Clean Fuel | No sugar habit 7+ days |
-| Master Planner | Planning habit 20+ times |
-| Halfway Hero | 50%+ monthly completion rate |
-| Monthly Champion | 80%+ monthly completion rate |
-
-### Share Month Card
-
-Rendered using the HTML5 Canvas API. The card reflects the active theme's color palette at the moment of generation. It includes:
-- Monthly consistency percentage
-- Total habits done, best streak, habit count
-- Mini heatmap of the current month
-- Top 5 habits by completion rate with color-coded bars
-
-### Accountability Partner
-
-Generates a URL appending `?view=<token>` where the token is a base64-encoded version of the user ID. When a visitor opens this URL, a read-only banner is displayed and all interactive elements (`check-box`, `add-btn`, `delete-btn`, `note-btn`, `mood-dot`) have pointer events disabled.
-
-> **Note:** Full read-only enforcement requires a Supabase RLS policy that allows public SELECT on `habit_checks` filtered by user ID. The current implementation relies on client-side UI disabling only.
+| ✅ First Step | Check your first habit |
+| ⭐ Perfect Day | 100% completion in one day |
+| 🔥 Week Warrior | 7-day streak on any habit |
+| 💎 Diamond Month | 30-day streak on any habit |
+| 👑 Two Week King | All habits done 14 days in a row |
+| 🚿 Ice Warrior | Cold Shower habit checked 20+ times |
+| 💪 Iron Consistent | Gym habit checked 10+ times |
+| 📚 Knowledge Seeker | Reading habit done 15+ times |
+| ⏰ Early Bird | Wake-up habit 10+ days |
+| 🥗 Clean Fuel | No sugar 7+ days |
+| 📝 Master Planner | Planning habit 20+ times |
+| 🎯 Halfway Hero | 50%+ monthly completion rate |
+| 🏆 Monthly Champion | 80%+ monthly completion rate |
 
 ---
 
-## Security
+## Built By
 
-- All database access goes through Supabase's PostgREST API with the `anon` key
-- Row Level Security (RLS) is enabled on every table — a user's data is never accessible to another user's session
-- The `anon` key is safe to expose in client-side code; it cannot bypass RLS
-- The `service_role` key is **never** used in this codebase and should never be added to client files
-- Passwords are managed entirely by Supabase Auth — they are never stored or transmitted through application code
+**Hassane Ait Ahmed Lamara** — Computer Science Student · Full-Stack Developer · AI & ML Enthusiast
 
----
-
-## Known Limitations
-
-- **Habit checks are loaded for ±1 month only** — the `loadAll()` function fetches checks between the previous month and the next month relative to today. The heatmap queries the full past year directly from the `checks` cache, so data older than one month may not appear in the heatmap unless the user navigates to those months first.
-- **Accountability partner view** — the share link disables UI client-side only. A determined viewer could still interact with the DOM. Server-side read-only enforcement is outside the current scope.
-- **Browser notifications** — the daily reminder uses the Web Notifications API, which requires the page to be open in a browser tab. It does not function as a true push notification when the browser is closed.
-- **No offline support** — the app requires an active internet connection to load data and sync changes. There is no service worker or offline cache.
-- **Canvas fonts** — the Share Month Card uses fonts loaded via Google Fonts. If fonts have not fully loaded at the time of canvas render, fallback system fonts will be used instead.
-
----
-
-## Author
-
-**Hassane Ait Ahmed Lamara**  
-Computer Science Student · Full-Stack Developer · AI & ML Enthusiast
-
-- GitHub: [github.com/hassane](https://github.com)
-- LinkedIn: [linkedin.com/in/hassane](https://linkedin.com)
+- GitHub: [github.com](https://github.com)
+- LinkedIn: [linkedin.com](https://linkedin.com)

@@ -3,7 +3,6 @@
   if (saved === 'dark') document.body.classList.add('dark');
   if (saved === 'pink') document.body.classList.add('pink');
   
-  const icons = { light: '🌙', dark: '🌸', pink: '☀️' };
   window.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('themeBtn') || document.getElementById('darkToggleBtn');
     if (btn && saved) btn.textContent = icons[saved] || '🌙';

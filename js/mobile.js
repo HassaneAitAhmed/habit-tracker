@@ -168,7 +168,7 @@ function renderMobToday() {
           ${cat ? `<div class="mob-habit-cat" style="color:${cat.color}">${cat.name}</div>` : ''}
         </div>
         <div class="mob-habit-right">
-          <button class="mob-pomo-btn" onclick="event.stopPropagation();openPomodoro('${h.id}','${h.name.replace(/'/g,'')}')">🍅</button>
+          <button class="mob-pomo-btn" onclick="event.stopPropagation();openMobPomodoro('${h.id}','${h.name.replace(/'/g,'')}')">🍅</button>
           <div class="mob-streak-badge" style="background:${h.color||'var(--accent)'}22;color:${h.color||'var(--accent)'}">
             ${streak > 0 ? streak + 'd' : '–'}
           </div>
@@ -186,6 +186,9 @@ function renderMobToday() {
 }
 
 async function mobToggle(habitId, day) {
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const targetDate    = new Date(today.getFullYear(), today.getMonth(), day);
+  if (targetDate < todayMidnight) return;
   await toggleCheck(habitId, day);
   renderMobToday();
   if (mobileTab === 'stats') renderMobStats();
@@ -363,16 +366,92 @@ function renderMobHeatmap() {
       </div>
       <div id="mobHeatmapSummary" style="font-family:var(--font-mono);font-size:10px;color:var(--ink3);margin-top:8px;"></div>
     </div>
-    <div class="mob-card">
-      <div class="mob-card-title">Best Day of the Week</div>
-      <div class="bd-chart" id="mobBestDay"></div>
-      <div id="mobBestDayMsg" style="font-family:var(--font-mono);font-size:10px;color:var(--ink3);margin-top:8px;"></div>
-    </div>
+    <div class="mob-card" id="mobBestDayCard"></div>
     <div style="height:90px"></div>`;
   setTimeout(() => {
     renderHeatmapInContainer('mobHeatmapCanvas', 'mobHeatmapSummary');
-    renderBestDayInContainer('mobBestDay', 'mobBestDayMsg');
+    renderMobBestDay();
   }, 50);
+}
+
+function renderMobBestDay() {
+  const el = document.getElementById('mobBestDayCard');
+  if (!el) return;
+
+  const DAY_FULL  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const DAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+  if (!habits.length) {
+    el.innerHTML = '<div class="mob-card-title">Your Best Day</div><div class="mob-empty-text">No habits yet.</div>';
+    return;
+  }
+
+  const totalChecks  = [0,0,0,0,0,0,0];
+  const daysWithData = [0,0,0,0,0,0,0];
+  const seenDates    = new Set();
+
+  Object.keys(checks).forEach(function(key) {
+    var idx2 = key.indexOf('__');
+    if (idx2 === -1) return;
+    var ds = key.substring(idx2 + 2);
+    if (!ds || ds.length < 10) return;
+    var dow = new Date(parseInt(ds.substring(0,4)), parseInt(ds.substring(5,7))-1, parseInt(ds.substring(8,10))).getDay();
+    totalChecks[dow]++;
+    seenDates.add(ds);
+  });
+
+  if (!seenDates.size) {
+    el.innerHTML = '<div class="mob-card-title">Your Best Day</div><div class="mob-empty-text">Not enough data yet — keep tracking!</div>';
+    return;
+  }
+
+  seenDates.forEach(function(ds) {
+    var dow = new Date(parseInt(ds.substring(0,4)), parseInt(ds.substring(5,7))-1, parseInt(ds.substring(8,10))).getDay();
+    daysWithData[dow]++;
+  });
+
+  var avgs = totalChecks.map(function(total, i) {
+    return daysWithData[i] > 0 ? Math.round((total / (daysWithData[i] * habits.length)) * 100) : 0;
+  });
+
+  var bestPct  = Math.max.apply(null, avgs);
+  var worstPct = Math.min.apply(null, avgs);
+  var bestIdx  = avgs.indexOf(bestPct);
+  var worstIdx = avgs.lastIndexOf(worstPct);
+  if (worstIdx === bestIdx) worstIdx = -1;
+
+  if (bestPct === 0) {
+    el.innerHTML = '<div class="mob-card-title">Your Best Day</div><div class="mob-empty-text">Not enough data yet — keep tracking!</div>';
+    return;
+  }
+
+  var rows = DAY_SHORT.map(function(name, i) {
+    var isBest  = i === bestIdx;
+    var isWorst = i === worstIdx;
+    var pct     = avgs[i];
+    var barW    = Math.round((pct / bestPct) * 100);
+    var color   = isBest ? 'var(--accent)' : isWorst ? 'var(--danger)' : 'var(--gold)';
+    return '<div class="ybd-row">'
+      + '<div class="ybd-day' + (isBest ? ' best' : isWorst ? ' worst' : '') + '">' + name + '</div>'
+      + '<div class="ybd-bar-bg"><div class="ybd-bar" style="width:' + barW + '%;background:' + color + '"></div></div>'
+      + '<div class="ybd-pct">' + pct + '%</div>'
+      + (isBest  ? '<div class="ybd-tag best-tag">Best</div>'   : '')
+      + (isWorst ? '<div class="ybd-tag worst-tag">Worst</div>' : '')
+      + '</div>';
+  }).join('');
+
+  el.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">'
+    + '<div class="mob-card-title" style="margin:0;">Best Day of the Week</div>'
+    + '<div style="font-family:var(--font-mono);font-size:9px;color:var(--ink3);">' + seenDates.size + ' days</div>'
+    + '</div>'
+    + '<div style="background:var(--surface);border-radius:10px;padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;">'
+    +   '<div style="font-size:28px;">🏆</div>'
+    +   '<div>'
+    +     '<div style="font-family:var(--font-head);font-size:20px;color:var(--accent);">' + DAY_FULL[bestIdx] + '</div>'
+    +     '<div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3);margin-top:2px;">' + bestPct + '% avg completion</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="ybd-rows">' + rows + '</div>';
 }
 
 function renderHeatmapInContainer(canvasId, summaryId) {
@@ -479,15 +558,15 @@ function renderMobAbout() {
     .catch(() => {
       el.innerHTML = `<div style="padding:12px 12px 90px;">
         <div class="about-hero">
-          <div class="about-avatar">HA</div>
+          <img class="about-avatar-img"  src="https://i.ibb.co/QF9GQdtg/profile.png" alt="Hassane Ait Ahmed Lamara">
           <div>
             <div class="about-name">Hassane Ait Ahmed Lamara</div>
             <div class="about-role">Computer Science Student · Full-Stack Developer · AI &amp; ML Enthusiast</div>
             <div class="about-tagline">I build AI-powered systems and web applications that solve real-world problems.</div>
             <div class="about-links">
-              <a class="about-link primary" href="https://github.com" target="_blank">⟶ View Projects</a>
-              <a class="about-link secondary" href="mailto:hassane@example.com">✉ Contact</a>
-              <a class="about-link secondary" href="https://linkedin.com" target="_blank">in LinkedIn</a>
+              <a class="about-link primary" href="https://github.com/HassaneAitAhmed" target="_blank">⟶ View Projects</a>
+              <a class="about-link secondary" hassaneaitahmedlamara@gmail.com>✉ Contact</a>
+              <a class="about-link secondary" href="https://www.linkedin.com/in/hassane-ait-ahmed-lamara/" target="_blank">in LinkedIn</a>
             </div>
           </div>
         </div>
@@ -919,51 +998,45 @@ async function mobApplyTemplate(id) {
   if (mobileTab === 'settings') renderMobSettings();
 }
 
-
 function openMobShareCard() {
-  let overlay = document.getElementById('mobShareCardOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'mobShareCardOverlay';
-    document.body.appendChild(overlay);
-  }
-  overlay.innerHTML = `
-    <div id="mobShareCardBg" onclick="closeMobShareCard()"></div>
-    <div id="mobShareCardSheet">
-      <div class="mhf-handle"></div>
-      <div class="mhf-header">
-        <div class="mhf-title">✦ Share Month Card</div>
-        <button class="mhf-close" onclick="closeMobShareCard()">✕</button>
+  let ov = document.getElementById('mobShareCardOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'mobShareCardOv'; document.body.appendChild(ov); }
+
+  ov.innerHTML = `
+    <div class="mob-sheet-bg" onclick="closeMobShareCard()"></div>
+    <div class="mob-sheet">
+      <div class="mob-sheet-handle"></div>
+      <div class="mob-sheet-head">
+        <span class="mob-sheet-title">✦ Share Month Card</span>
+        <button class="mob-sheet-x" onclick="closeMobShareCard()">✕</button>
       </div>
-      <div class="mhf-body">
-        <div style="font-family:var(--font-mono);font-size:10px;color:var(--ink3);letter-spacing:.08em;margin-bottom:12px;">
-          ${MONTHS[viewMonth].toUpperCase()} ${viewYear}
-        </div>
-        <canvas id="mobShareCanvas" style="width:100%;border-radius:10px;border:1px solid var(--border);display:block;margin-bottom:16px;"></canvas>
-        <button class="mhf-save-btn" onclick="downloadMobShareCard()">⬇ Download Card</button>
-        <div style="height:20px"></div>
+      <div class="mob-sheet-body">
+        <p class="mob-sheet-desc">${MONTHS[viewMonth]} ${viewYear} — your consistency card</p>
+        <canvas id="mobShareCvs" style="width:100%;border-radius:10px;border:1px solid var(--border);display:block;margin-bottom:16px;"></canvas>
+        <button class="mob-sheet-btn" onclick="downloadMobCard()">⬇ Download PNG</button>
+        <div style="height:24px"></div>
       </div>
     </div>`;
-  overlay.classList.add('open');
-  setTimeout(() => renderMobShareCanvas(), 80);
+  ov.className = 'mob-sheet-ov open';
+  setTimeout(drawMobCard, 60);
 }
 
 function closeMobShareCard() {
-  const overlay = document.getElementById('mobShareCardOverlay');
-  if (overlay) overlay.classList.remove('open');
+  const ov = document.getElementById('mobShareCardOv');
+  if (ov) ov.className = 'mob-sheet-ov';
 }
 
-function renderMobShareCanvas() {
-  const canvas = document.getElementById('mobShareCanvas');
+function drawMobCard() {
+  const canvas = document.getElementById('mobShareCvs');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const W = 540, H = 720;
   canvas.width = W; canvas.height = H;
 
   const days = getDays(viewYear, viewMonth);
-  let goal = 0, done = 0, bestStreak = 0;
+  let goal = 0, done = 0, bestStreak = 0, hS = 0;
   habits.forEach(h => {
-    let hS = 0;
+    hS = 0;
     for (let d = 1; d <= days; d++) {
       if (isApplicable(h, viewYear, viewMonth, d)) {
         goal++;
@@ -972,133 +1045,322 @@ function renderMobShareCanvas() {
       }
     }
   });
-  const pct = goal > 0 ? Math.round((done / goal) * 100) : 0;
-  const monthName = MONTHS[viewMonth] + ' ' + viewYear;
-
-  const style = getComputedStyle(document.body);
-  const bg     = style.getPropertyValue('--bg').trim()     || '#F5F2EC';
-  const accent = style.getPropertyValue('--accent').trim() || '#4A3F2F';
-  const gold   = style.getPropertyValue('--gold').trim()   || '#C4924A';
-  const ink    = style.getPropertyValue('--ink').trim()    || '#1C1A15';
-  const ink3   = style.getPropertyValue('--ink3').trim()   || '#A09890';
-  const border = style.getPropertyValue('--border').trim() || '#D8D2C4';
+  const pct = goal > 0 ? Math.round(done / goal * 100) : 0;
+  const cs = getComputedStyle(document.body);
+  const bg = cs.getPropertyValue('--bg').trim() || '#F5F2EC';
+  const ac = cs.getPropertyValue('--accent').trim() || '#4A3F2F';
+  const gd = cs.getPropertyValue('--gold').trim() || '#C4924A';
+  const ik = cs.getPropertyValue('--ink').trim() || '#1C1A15';
+  const i3 = cs.getPropertyValue('--ink3').trim() || '#A09890';
+  const bd = cs.getPropertyValue('--border').trim() || '#D8D2C4';
 
   ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = accent; ctx.fillRect(0, 0, W, 6);
-
-  ctx.fillStyle = ink; ctx.font = 'bold 13px "DM Mono",monospace';
+  ctx.fillStyle = ac; ctx.fillRect(0, 0, W, 6);
+  ctx.fillStyle = ik; ctx.font = 'bold 13px "DM Mono",monospace';
   ctx.fillText('HABIT TRACKER', 40, 48);
-  ctx.fillStyle = ink3; ctx.font = '12px "DM Mono",monospace';
-  ctx.fillText(monthName.toUpperCase(), 40, 66);
-
-  ctx.fillStyle = accent; ctx.font = 'bold 96px "DM Serif Display",serif';
+  ctx.fillStyle = i3; ctx.font = '12px "DM Mono",monospace';
+  ctx.fillText((MONTHS[viewMonth] + ' ' + viewYear).toUpperCase(), 40, 66);
+  ctx.fillStyle = ac; ctx.font = 'bold 96px "DM Serif Display",serif';
   ctx.fillText(pct + '%', 40, 175);
-  ctx.fillStyle = ink3; ctx.font = '13px "DM Mono",monospace';
+  ctx.fillStyle = i3; ctx.font = '13px "DM Mono",monospace';
   ctx.fillText('consistency rate', 40, 198);
 
-  [[done.toString(),'habits done'],[bestStreak+'d','best streak'],[habits.length.toString(),'habits tracked']]
-    .forEach(([val, label], i) => {
-      const x = 40 + i * 160;
-      ctx.fillStyle = ink; ctx.font = 'bold 28px "DM Serif Display",serif'; ctx.fillText(val, x, 240);
-      ctx.fillStyle = ink3; ctx.font = '11px "DM Mono",monospace'; ctx.fillText(label, x, 258);
-    });
-
-  ctx.strokeStyle = border; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(40,275); ctx.lineTo(W-40,275); ctx.stroke();
-
-  const cellSize = 14, gap = 3, startDow = getDOW(viewYear, viewMonth, 1);
-  for (let d = 1; d <= days; d++) {
-    const idx = d - 1 + startDow;
-    const col = Math.floor(idx / 7), row = idx % 7;
-    let app = 0, dn = 0;
-    habits.forEach(h => { if(isApplicable(h,viewYear,viewMonth,d)){app++;if(isChecked(h.id,d))dn++;} });
-    const p = app > 0 ? dn/app : -1;
-    ctx.fillStyle = p < 0 ? border : p >= .9 ? accent : p >= .6 ? gold : p > 0 ? gold : border;
-    if (p >= .6 && p < .9) ctx.globalAlpha = .7;
-    const x = 40 + col*(cellSize+gap), y = 295 + row*(cellSize+gap);
-    ctx.beginPath(); ctx.roundRect(x,y,cellSize,cellSize,2); ctx.fill(); ctx.globalAlpha = 1;
-  }
-
-  const listY = 295 + 7*(cellSize+gap) + 24;
-  ctx.fillStyle = ink3; ctx.font = '10px "DM Mono",monospace';
-  ctx.fillText('TOP HABITS THIS MONTH', 40, listY);
-
-  habits.map(h => {
-    let a=0,d=0;
-    for(let dd=1;dd<=days;dd++) if(isApplicable(h,viewYear,viewMonth,dd)){a++;if(isChecked(h.id,dd))d++;}
-    return {h, pct: a>0?Math.round(d/a*100):0};
-  }).sort((a,b)=>b.pct-a.pct).slice(0,5).forEach((r,i) => {
-    const y = listY + 20 + i * 38;
-    ctx.fillStyle = border; ctx.beginPath(); ctx.roundRect(40,y,W-80,24,4); ctx.fill();
-    ctx.fillStyle = r.h.color || accent; ctx.beginPath(); ctx.roundRect(40,y,Math.max(8,(W-80)*r.pct/100),24,4); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.font = 'bold 11px "Syne",sans-serif'; ctx.fillText(r.h.emoji+' '+r.h.name, 52, y+15);
-    ctx.font = '11px "DM Mono",monospace'; ctx.textAlign = 'right'; ctx.fillText(r.pct+'%', W-50, y+15); ctx.textAlign = 'left';
+  [[done + '', 'habits done'], [bestStreak + 'd', 'best streak'], [habits.length + '', 'habits tracked']].forEach(([v, l], i) => {
+    const x = 40 + i * 160;
+    ctx.fillStyle = ik; ctx.font = 'bold 28px "DM Serif Display",serif'; ctx.fillText(v, x, 238);
+    ctx.fillStyle = i3; ctx.font = '11px "DM Mono",monospace'; ctx.fillText(l, x, 256);
   });
 
-  ctx.fillStyle = ink3; ctx.font = '11px "DM Mono",monospace'; ctx.textAlign = 'center';
-  ctx.fillText('habit-tracker · Track · Reflect · Grow', W/2, H-28);
+  ctx.strokeStyle = bd; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(40, 274); ctx.lineTo(W - 40, 274); ctx.stroke();
+
+  const cs2 = 14, g2 = 3, sdow = getDOW(viewYear, viewMonth, 1);
+  for (let d = 1; d <= days; d++) {
+    const idx = d - 1 + sdow;
+    const col = Math.floor(idx / 7), row = idx % 7;
+    let app = 0, dn = 0;
+    habits.forEach(h => { if (isApplicable(h, viewYear, viewMonth, d)) { app++; if (isChecked(h.id, d)) dn++; } });
+    const p = app > 0 ? dn / app : -1;
+    ctx.fillStyle = p < 0 ? bd : p >= .9 ? ac : p > 0 ? gd : bd;
+    ctx.globalAlpha = (p >= .6 && p < .9) ? .7 : 1;
+    const x = 40 + col * (cs2 + g2), y = 294 + row * (cs2 + g2);
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, cs2, cs2, 2); else ctx.rect(x, y, cs2, cs2);
+    ctx.fill(); ctx.globalAlpha = 1;
+  }
+
+  const ly = 294 + 7 * (cs2 + g2) + 22;
+  ctx.fillStyle = i3; ctx.font = '10px "DM Mono",monospace'; ctx.fillText('TOP HABITS', 40, ly);
+  habits.map(h => {
+    let a = 0, d = 0;
+    for (let dd = 1; dd <= days; dd++) if (isApplicable(h, viewYear, viewMonth, dd)) { a++; if (isChecked(h.id, dd)) d++; }
+    return { h, pct: a > 0 ? Math.round(d / a * 100) : 0 };
+  }).sort((a, b) => b.pct - a.pct).slice(0, 5).forEach((r, i) => {
+    const y = ly + 18 + i * 36;
+    ctx.fillStyle = bd; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(40, y, W - 80, 22, 3); else ctx.rect(40, y, W - 80, 22); ctx.fill();
+    ctx.fillStyle = r.h.color || ac; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(40, y, Math.max(8, (W - 80) * r.pct / 100), 22, 3); else ctx.rect(40, y, Math.max(8, (W - 80) * r.pct / 100), 22); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 10px "Syne",sans-serif'; ctx.fillText(r.h.emoji + ' ' + r.h.name, 50, y + 14);
+    ctx.font = '10px "DM Mono",monospace'; ctx.textAlign = 'right'; ctx.fillText(r.pct + '%', W - 48, y + 14); ctx.textAlign = 'left';
+  });
+
+  ctx.fillStyle = i3; ctx.font = '10px "DM Mono",monospace'; ctx.textAlign = 'center';
+  ctx.fillText('habit-tracker · Track · Reflect · Grow', W / 2, H - 26);
   ctx.textAlign = 'left';
 }
 
-function downloadMobShareCard() {
-  const canvas = document.getElementById('mobShareCanvas');
+function downloadMobCard() {
+  const canvas = document.getElementById('mobShareCvs');
   if (!canvas) return;
   const a = document.createElement('a');
-  a.download = 'my-habit-month.png';
+  a.download = 'habit-month-' + MONTHS[viewMonth] + '-' + viewYear + '.png';
   a.href = canvas.toDataURL('image/png');
   a.click();
-  showToast('Card saved! Share it anywhere 🎉');
+  showToast('Card saved! 🎉');
 }
 
 function openMobAccountability() {
-  let overlay = document.getElementById('mobAccOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'mobAccOverlay';
-    document.body.appendChild(overlay);
-  }
-  const token = currentUser ? btoa(currentUser.id).replace(/=/g,'') : '';
+  let ov = document.getElementById('mobAccOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'mobAccOv'; document.body.appendChild(ov); }
+
+  const token = currentUser ? btoa(currentUser.id).replace(/=/g, '') : '';
   const url = window.location.origin + window.location.pathname + '?view=' + token;
 
-  overlay.innerHTML = `
-    <div id="mobAccBg" onclick="closeMobAccountability()"></div>
-    <div id="mobAccSheet">
-      <div class="mhf-handle"></div>
-      <div class="mhf-header">
-        <div class="mhf-title">👁 Accountability Partner</div>
-        <button class="mhf-close" onclick="closeMobAccountability()">✕</button>
+  ov.innerHTML = `
+    <div class="mob-sheet-bg" onclick="closeMobAcc()"></div>
+    <div class="mob-sheet">
+      <div class="mob-sheet-handle"></div>
+      <div class="mob-sheet-head">
+        <span class="mob-sheet-title">👁 Accountability Partner</span>
+        <button class="mob-sheet-x" onclick="closeMobAcc()">✕</button>
       </div>
-      <div class="mhf-body">
-        <div class="mob-acc-desc">
-          Share this link with a friend, coach, or mentor. They can see your progress in real time — read-only, they cannot edit anything.
+      <div class="mob-sheet-body">
+        <p class="mob-sheet-desc">Share this link with a friend or coach. They see your habits in real time — read only, they cannot edit anything.</p>
+        <div class="mob-acc-url-box">
+          <div class="mob-acc-url-text">${url}</div>
         </div>
-        <div class="mob-acc-label">Your share link</div>
-        <div class="mob-acc-link-row">
-          <div class="mob-acc-link-text" id="mobAccLinkText">${url}</div>
-        </div>
-        <button class="mhf-save-btn" onclick="copyMobShareLink('${url}')">📋 Copy Link</button>
-        <div class="mob-acc-note">
-          ℹ Your partner sees a read-only view. To disable sharing, change your password.
-        </div>
-        <div style="height:20px"></div>
+        <button class="mob-sheet-btn" id="mobAccCopyBtn" onclick="mobCopyUrl('${url}')">📋 Copy Link</button>
+        <div class="mob-acc-info">ℹ To disable sharing, change your account password.</div>
+        <div style="height:24px"></div>
       </div>
     </div>`;
-  overlay.classList.add('open');
+  ov.className = 'mob-sheet-ov open';
 }
 
-function closeMobAccountability() {
-  const overlay = document.getElementById('mobAccOverlay');
-  if (overlay) overlay.classList.remove('open');
+function closeMobAcc() {
+  const ov = document.getElementById('mobAccOv');
+  if (ov) ov.className = 'mob-sheet-ov';
 }
 
-function copyMobShareLink(url) {
+function mobCopyUrl(url) {
   navigator.clipboard.writeText(url).then(() => {
-    showToast('Link copied! Send it to your partner ✅');
+    const btn = document.getElementById('mobAccCopyBtn');
+    if (btn) { btn.textContent = '✅ Copied!'; setTimeout(() => { btn.textContent = '📋 Copy Link'; }, 2000); }
+    showToast('Link copied — send it to your partner!');
   }).catch(() => {
     const ta = document.createElement('textarea');
-    ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-    document.body.removeChild(ta);
+    ta.value = url; ta.style.cssText = 'position:fixed;opacity:0;';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     showToast('Link copied!');
   });
+}
+
+function openMobPomodoro(habitId, habitName) {
+  let ov = document.getElementById('mobPomoOv');
+  if (!ov) { ov = document.createElement('div'); ov.id = 'mobPomoOv'; document.body.appendChild(ov); }
+
+  ov.innerHTML = `
+    <div class="mob-sheet-bg" onclick="closeMobPomo()"></div>
+    <div class="mob-sheet">
+      <div class="mob-sheet-handle"></div>
+      <div class="mob-sheet-head">
+        <span class="mob-sheet-title">🍅 Pomodoro</span>
+        <button class="mob-sheet-x" onclick="closeMobPomo()">✕</button>
+      </div>
+      <div class="mob-sheet-body" id="mobPomoBody" style="text-align:center;">
+        <div class="mob-pomo-habit" id="mobPomoHabit">${habitName || 'Free session'}</div>
+        <div class="mob-pomo-presets" id="mobPomoPresets"></div>
+        <div class="mob-pomo-modes" id="mobPomoModes"></div>
+        <div class="mob-pomo-ring-wrap">
+          <svg id="mobPomoSvg" width="160" height="160" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="66" fill="none" stroke="var(--border)" stroke-width="10"/>
+            <circle id="mobPomoArc" cx="80" cy="80" r="66" fill="none" stroke="var(--accent)"
+              stroke-width="10" stroke-linecap="round" transform="rotate(-90 80 80)"
+              stroke-dasharray="414.7" stroke-dashoffset="414.7"/>
+          </svg>
+          <div class="mob-pomo-time" id="mobPomoTime">25:00</div>
+          <div class="mob-pomo-label" id="mobPomoLabel">Focus</div>
+        </div>
+        <div class="mob-pomo-sessions" id="mobPomoSessions">Session 1 · 0 completed</div>
+        <div class="mob-pomo-controls" id="mobPomoControls"></div>
+        <div style="height:28px"></div>
+      </div>
+    </div>`;
+  ov.className = 'mob-sheet-ov open';
+
+  mobPomoState.habitId   = habitId   || null;
+  mobPomoState.habitName = habitName || 'Free session';
+  mobPomoState.mode      = 'work';
+  mobPomoState.customMin = mobPomoState.customMin || 25;
+  mobPomoState.seconds   = mobPomoState.customMin * 60;
+  mobPomoState.total     = mobPomoState.customMin * 60;
+  mobPomoState.running   = false;
+  mobPomoState.paused    = false;
+  clearInterval(mobPomoState.interval);
+  renderMobPomo();
+}
+
+function closeMobPomo() {
+  clearInterval(mobPomoState.interval);
+  mobPomoState.running = false;
+  mobPomoState.paused  = false;
+  const ov = document.getElementById('mobPomoOv');
+  if (ov) ov.className = 'mob-sheet-ov';
+}
+
+const mobPomoState = {
+  running: false, paused: false,
+  seconds: 25*60, total: 25*60, customMin: 25,
+  mode: 'work', habitId: null, habitName: '', interval: null, sessions: 0
+};
+
+const MOB_POMO_MODES = {
+  work:        { label: 'Focus',       secs: 25*60, color: 'var(--accent)' },
+  short_break: { label: 'Short Break', secs:  5*60, color: 'var(--check)'  },
+  long_break:  { label: 'Long Break',  secs: 15*60, color: '#185FA5'       },
+};
+
+function renderMobPomo() {
+  const mins = Math.floor(mobPomoState.seconds / 60);
+  const secs = mobPomoState.seconds % 60;
+  const timeStr = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+  const progress = mobPomoState.total > 0 ? 1 - mobPomoState.seconds / mobPomoState.total : 0;
+  const circ = 2 * Math.PI * 66;
+  const offset = circ * (1 - progress);
+  const color = MOB_POMO_MODES[mobPomoState.mode].color;
+
+  const timeEl = document.getElementById('mobPomoTime');
+  const arcEl  = document.getElementById('mobPomoArc');
+  const labelEl= document.getElementById('mobPomoLabel');
+  const sessEl = document.getElementById('mobPomoSessions');
+  if (timeEl)  timeEl.textContent = timeStr;
+  if (arcEl)   { arcEl.setAttribute('stroke-dashoffset', offset.toFixed(1)); arcEl.setAttribute('stroke', color); }
+  if (labelEl) labelEl.textContent = MOB_POMO_MODES[mobPomoState.mode].label;
+  if (sessEl)  sessEl.textContent = 'Session ' + (mobPomoState.sessions + 1) + ' · ' + mobPomoState.sessions + ' completed today';
+
+  const presetsEl = document.getElementById('mobPomoPresets');
+  if (presetsEl && mobPomoState.mode === 'work') {
+    presetsEl.innerHTML = [5,10,15,20,25,30,45,60].map(m =>
+      `<button class="mob-pomo-preset ${mobPomoState.customMin===m&&!mobPomoState.running&&!mobPomoState.paused?'active':''}"
+        onclick="mobPomoSetDur(${m})">${m}m</button>`
+    ).join('');
+  } else if (presetsEl) presetsEl.innerHTML = '';
+
+  const modesEl = document.getElementById('mobPomoModes');
+  if (modesEl) {
+    modesEl.innerHTML = Object.entries(MOB_POMO_MODES).map(([k,v]) =>
+      `<button class="mob-pomo-mode ${mobPomoState.mode===k?'active':''}" onclick="mobPomoSetMode('${k}')">${v.label}</button>`
+    ).join('');
+  }
+
+  const ctrlEl = document.getElementById('mobPomoControls');
+  if (ctrlEl) {
+    if (!mobPomoState.running || mobPomoState.paused) {
+      ctrlEl.innerHTML = `
+        <button class="mob-pomo-start" onclick="mobPomoStart()">▶ ${mobPomoState.paused ? 'Resume' : 'Start'}</button>
+        <button class="mob-pomo-reset" onclick="mobPomoReset()">↺ Reset</button>`;
+    } else {
+      ctrlEl.innerHTML = `
+        <button class="mob-pomo-start" onclick="mobPomoPause()">⏸ Pause</button>
+        <button class="mob-pomo-reset" onclick="mobPomoReset()">↺ Reset</button>`;
+    }
+  }
+}
+
+function mobPomoSetDur(minutes) {
+  if (mobPomoState.running) return;
+  mobPomoState.customMin = minutes;
+  mobPomoState.seconds   = minutes * 60;
+  mobPomoState.total     = minutes * 60;
+  mobPomoState.paused    = false;
+  renderMobPomo();
+}
+
+function mobPomoSetMode(mode) {
+  clearInterval(mobPomoState.interval);
+  mobPomoState.mode    = mode;
+  mobPomoState.running = false;
+  mobPomoState.paused  = false;
+  const defaults = { work: mobPomoState.customMin*60, short_break: 5*60, long_break: 15*60 };
+  mobPomoState.seconds = defaults[mode];
+  mobPomoState.total   = defaults[mode];
+  renderMobPomo();
+}
+
+function mobPomoStart() {
+  mobPomoState.running = true;
+  mobPomoState.paused  = false;
+  clearInterval(mobPomoState.interval);
+  mobPomoState.interval = setInterval(() => {
+    mobPomoState.seconds--;
+    renderMobPomo();
+    if (mobPomoState.seconds <= 0) {
+      clearInterval(mobPomoState.interval);
+      mobPomoState.running = false;
+      mobPomoComplete();
+    }
+  }, 1000);
+  renderMobPomo();
+}
+
+function mobPomoPause() {
+  clearInterval(mobPomoState.interval);
+  mobPomoState.paused  = true;
+  mobPomoState.running = false;
+  renderMobPomo();
+}
+
+function mobPomoReset() {
+  clearInterval(mobPomoState.interval);
+  mobPomoState.running = false;
+  mobPomoState.paused  = false;
+  const defaults = { work: mobPomoState.customMin*60, short_break: 5*60, long_break: 15*60 };
+  mobPomoState.seconds = defaults[mobPomoState.mode];
+  mobPomoState.total   = defaults[mobPomoState.mode];
+  renderMobPomo();
+}
+
+async function mobPomoComplete() {
+  mobPomoState.sessions++;
+  try {
+    const ctx2 = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784].forEach((freq, i) => {
+      const o = ctx2.createOscillator(), g = ctx2.createGain();
+      o.connect(g); g.connect(ctx2.destination);
+      o.frequency.value = freq; o.type = 'sine';
+      g.gain.setValueAtTime(0.25, ctx2.currentTime + i*.18);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + i*.18 + .3);
+      o.start(ctx2.currentTime + i*.18); o.stop(ctx2.currentTime + i*.18 + .35);
+    });
+  } catch(e) {}
+
+  if (mobPomoState.mode === 'work' && mobPomoState.habitId) {
+    const d = today.getDate();
+    const key = `${mobPomoState.habitId}__${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    if (!checks[key]) {
+      await toggleCheck(mobPomoState.habitId, d);
+      renderMobToday();
+    }
+    showToast('🍅 Session done! Habit checked ✓');
+  } else {
+    showToast(mobPomoState.mode === 'work' ? '🍅 Session complete!' : '☕ Break over!');
+  }
+
+  try {
+    if (Notification.permission === 'granted') {
+      new Notification('🍅 Pomodoro', { body: mobPomoState.mode === 'work' ? 'Session done! Take a break.' : 'Back to work!' });
+    }
+  } catch(e) {}
+
+  mobPomoSetMode(mobPomoState.mode === 'work'
+    ? (mobPomoState.sessions % 4 === 0 ? 'long_break' : 'short_break')
+    : 'work');
 }
